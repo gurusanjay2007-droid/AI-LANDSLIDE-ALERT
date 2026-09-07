@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-Based Early Warning & Landslide Risk Monitoring System</title>
+  <meta name="description" content="Continuous geo-environmental monitoring, Google Earth Engine integration, AI-powered landslide risk prediction and location-specific early warning system.">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet GIS Mapping CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/map.css">
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- ====================================================================== -->
+    <!-- 1. SIDEBAR NAVIGATION -->
+    <!-- ====================================================================== -->
+    <aside class="sidebar" id="main-sidebar">
+      <div class="sidebar-header">
+        <div class="logo-badge">🛡️</div>
+        <div class="logo-title">
+          <h1>Landslide Monitor</h1>
+          <span>AI Early Warning System</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Operations</div>
+        <a href="#landing" class="nav-item" data-view="landing">
+          <span class="nav-icon">🌐</span>
+          <span>Overview & Landing</span>
+        </a>
+        <a href="#dashboard" class="nav-item active" data-view="dashboard">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="#map" class="nav-item" data-view="map">
+          <span class="nav-icon">🗺️</span>
+          <span>Live Risk Map</span>
+        </a>
+        <a href="#analysis" class="nav-item" data-view="analysis">
+          <span class="nav-icon">🔍</span>
+          <span>Location Analysis</span>
+        </a>
+
+        <div class="nav-section-title">Intelligence & AI</div>
+        <a href="#environment" class="nav-item" data-view="environment">
+          <span class="nav-icon">📡</span>
+          <span>Environmental Data</span>
+        </a>
+        <a href="#prediction" class="nav-item" data-view="prediction">
+          <span class="nav-icon">🧠</span>
+          <span>AI Prediction & ML</span>
+        </a>
+        <a href="#trends" class="nav-item" data-view="trends">
+          <span class="nav-icon">📈</span>
+          <span>Risk Trends</span>
+        </a>
+        <a href="#workflow" class="nav-item" data-view="workflow">
+          <span class="nav-icon">🔄</span>
+          <span>System Workflow</span>
+        </a>
+
+        <div class="nav-section-title">Disaster Response</div>
+        <a href="#alerts" class="nav-item" data-view="alerts">
+          <span class="nav-icon">⚠️</span>
+          <span>Alerts & Warnings</span>
+          <span class="badge-count" id="nav-alert-badge">3</span>
+        </a>
+        <a href="#citizen-reports" class="nav-item" data-view="citizen-reports">
+          <span class="nav-icon">📢</span>
+          <span>Citizen Reporting</span>
+        </a>
+        <a href="#history" class="nav-item" data-view="history">
+          <span class="nav-icon">📜</span>
+          <span>Historical Records</span>
+        </a>
+        <a href="#admin" class="nav-item" data-view="admin">
+          <span class="nav-icon">⚙️</span>
+          <span>System & GEE Health</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status-indicator">
+          <div class="status-dot"></div>
+          <div>
+            <div style="font-weight: 700; color: #0f172a;">GEE Pipeline Active</div>
+            <div style="font-size: 0.7rem; color: #64748b;">Telemetry Stream: Normal</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ====================================================================== -->
+    <!-- 2. MAIN VIEWPORT & HEADER -->
+    <!-- ====================================================================== -->
+    <div class="main-wrapper">
+      
+      <!-- Top Sticky Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle navigation">☰</button>
+          
+          <div class="location-context">
+            <span>📍 Active Sector:</span>
+            <strong id="header-location-name">Coonoor Ghat Corridor (Nilgiris)</strong>
+          </div>
+
+          <!-- Quick Global Search Bar -->
+          <div style="position: relative; width: 280px;" class="desktop-only">
+            <input type="text" id="global-location-search" placeholder="Search village, district, coordinates..." style="width: 100%; padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.825rem; outline: none;">
+            <div id="search-results-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border-light); border-radius: 8px; box-shadow: var(--shadow-lg); z-index: 200; max-height: 240px; overflow-y: auto; margin-top: 4px;"></div>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div class="update-ticker">
+            <span>🔄 Auto-refresh: <b id="refresh-countdown">5:00</b></span>
+          </div>
+
+          <button class="btn btn-secondary btn-sm" id="btn-toggle-sound">🔊 Sound: ON</button>
+
+          <button class="btn btn-secondary btn-sm" onclick="LandslideApp.refreshLiveData()">⚡ Refresh Now</button>
+
+          <button class="btn btn-secondary btn-sm" onclick="ExportUtils.downloadCSV()">📥 CSV</button>
+
+          <button class="btn btn-primary btn-sm" onclick="ExportUtils.printRiskReport(LandslideApp.currentLocationId)">📄 Print Bulletin</button>
+
+          <div class="role-switcher">
+            <label for="global-role-select" style="font-size: 0.75rem; font-weight: 700; color: #64748b;">ROLE:</label>
+            <select id="global-role-select" class="role-select">
+              <option value="DISASTER_MANAGER">Disaster Manager</option>
+              <option value="ADMIN">System Admin</option>
+              <option value="ANALYST">Field Geologist</option>
+              <option value="CITIZEN">Citizen Portal</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Body Routing Area -->
+      <main class="content-body">
+
+        <!-- ================================================================== -->
+        <!-- VIEW 0: LANDING PAGE & SYSTEM OVERVIEW -->
+        <!-- ================================================================== -->
+        <section id="view-landing" class="view-section" style="display: none;">
+          <div style="background: white; border: 1px solid var(--border-light); border-radius: 20px; padding: 3rem 2.5rem; box-shadow: var(--shadow-sm); margin-bottom: 2rem;">
+            <div style="max-width: 900px; margin: 0 auto; text-align: center;">
+              <span style="display: inline-block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.8rem; font-weight: 700; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; margin-bottom: 1rem;">
+                Autonomous Geospatial Early Warning Architecture
+              </span>
+              <h1 style="font-size: 2.75rem; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 1rem;">
+                Predict. Warn. Protect.
+              </h1>
+              <p style="font-size: 1.15rem; color: #475569; line-height: 1.6; margin-bottom: 2rem;">
+                AI-powered landslide risk monitoring and early warning platform integrating Google Earth Engine satellite imagery, Doppler radar precipitation, in-situ geotechnical telemetry, and deep ensemble machine learning.
+              </p>
+              <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                <button class="btn btn-primary" style="padding: 0.75rem 1.75rem; font-size: 1rem;" onclick="LandslideApp.navigateTo('dashboard')">
+                  Open Live Dashboard →
+                </button>
+                <button class="btn btn-secondary" style="padding: 0.75rem 1.75rem; font-size: 1rem;" onclick="LandslideApp.navigateTo('map')">
+                  Explore Interactive GIS Map
+                </button>
+                <button class="btn btn-secondary" style="padding: 0.75rem 1.75rem; font-size: 1rem;" onclick="LandslideApp.navigateTo('workflow')">
+                  View 7-Step Workflow
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Cards Grid -->
+          <div class="grid-cols-3" style="margin-bottom: 2rem;">
+            <div class="card">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛰️</div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Google Earth Engine Pipeline</h3>
+              <p style="font-size: 0.875rem; color: #475569;">
+                Continuous satellite ingestion of Sentinel-1 InSAR surface displacement, SRTM 30m digital elevation slope profiles, and MODIS vegetation stress indices.
+              </p>
+            </div>
+            <div class="card">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧠</div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">AI Multi-Factor ML Engine</h3>
+              <p style="font-size: 0.875rem; color: #475569;">
+                Weighted geotechnical susceptibility indexing combining 24h rainfall, degree of soil saturation, slope inclination, and historical incident proximity.
+              </p>
+            </div>
+            <div class="card">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚨</div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Automated Early Warning</h3>
+              <p style="font-size: 0.875rem; color: #475569;">
+                Instant generation of location-specific warnings, automated NDMA CAP protocol broadcasting, and crowd-sourced citizen hazard verification.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 1: DASHBOARD -->
+        <!-- ================================================================== -->
+        <section id="view-dashboard" class="view-section">
+          <div class="page-title-banner">
+            <div>
+              <h2>AI-Based Landslide Early Warning System</h2>
+              <p>Continuous monitoring, AI-powered risk prediction and location-specific early warning.</p>
+            </div>
+            <div class="page-actions">
+              <select id="global-location-select" class="role-select" style="padding: 0.5rem 0.8rem; font-size: 0.85rem;"></select>
+            </div>
+          </div>
+
+          <!-- KPI Cards Grid -->
+          <div class="grid-cols-4" style="margin-bottom: 1.5rem;">
+            <div class="kpi-card kpi-high" onclick="LandslideApp.navigateTo('map')">
+              <div class="kpi-label">
+                <span>HIGH / CRITICAL RISK</span>
+                <span class="risk-badge CRITICAL" style="font-size: 0.65rem;">URGENT</span>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-number" style="color: #991b1b;" id="kpi-high-risk">3 Zones</span>
+              </div>
+              <div class="kpi-subtext">Immediate action / evacuation watch</div>
+            </div>
+
+            <div class="kpi-card kpi-mod" onclick="LandslideApp.navigateTo('map')">
+              <div class="kpi-label">
+                <span>MODERATE RISK</span>
+                <span class="risk-badge MODERATE" style="font-size: 0.65rem;">WATCH</span>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-number" style="color: #d97706;" id="kpi-mod-risk">2 Zones</span>
+              </div>
+              <div class="kpi-subtext">Elevated saturation & slope creep</div>
+            </div>
+
+            <div class="kpi-card kpi-low" onclick="LandslideApp.navigateTo('map')">
+              <div class="kpi-label">
+                <span>LOW RISK</span>
+                <span class="risk-badge LOW" style="font-size: 0.65rem;">SAFE</span>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-number" style="color: #059669;" id="kpi-low-risk">3 Zones</span>
+              </div>
+              <div class="kpi-subtext">Within operational safety limits</div>
+            </div>
+
+            <div class="kpi-card kpi-alert" onclick="LandslideApp.navigateTo('alerts')">
+              <div class="kpi-label">
+                <span>ACTIVE ALERTS</span>
+                <span class="risk-badge CRITICAL" style="font-size: 0.65rem;">BROADCAST</span>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-number" style="color: #991b1b;" id="kpi-active-alerts">4</span>
+              </div>
+              <div class="kpi-subtext">Disaster response alerts dispatched</div>
+            </div>
+          </div>
+
+          <!-- Secondary Telemetry KPI Summary -->
+          <div class="grid-cols-4" style="margin-bottom: 1.5rem;">
+            <div class="kpi-card kpi-info">
+              <div class="kpi-label">AVG 24H RAINFALL</div>
+              <div class="kpi-value-row">
+                <span class="kpi-number" style="font-size: 1.5rem;" id="kpi-avg-rain">111 mm</span>
+              </div>
+              <div class="kpi-subtext">↑ 28% above seasonal baseline</div>
+            </div>
+            <div class="kpi-card kpi-info">
+              <div class="kpi-label">AVG SOIL SATURATION</div>
+              <div class="kpi-value-row">
+                <span class="kpi-number" style="font-size: 1.5rem;" id="kpi-avg-soil">69%</span>
+              </div>
+              <div class="kpi-subtext">TDR in-situ moisture sensors</div>
+            </div>
+            <div class="kpi-card kpi-info">
+              <div class="kpi-label">AVG SLOPE ANGLE</div>
+              <div class="kpi-value-row">
+                <span class="kpi-number" style="font-size: 1.5rem;" id="kpi-avg-slope">33°</span>
+              </div>
+              <div class="kpi-subtext">NASA SRTM 30m DEM elevation</div>
+            </div>
+            <div class="kpi-card kpi-info">
+              <div class="kpi-label">MODEL CONFIDENCE</div>
+              <div class="kpi-value-row">
+                <span class="kpi-number" style="font-size: 1.5rem; color: #1e40af;">94.2%</span>
+              </div>
+              <div class="kpi-subtext">Ensemble Random Forest / LSTM</div>
+            </div>
+          </div>
+
+          <!-- Monitored Hazard Zones Table -->
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+              <h3 class="card-title">📍 Live Monitored Hazard Zones & AI Risk Status</h3>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideApp.navigateTo('map')">View Full Screen Map →</button>
+            </div>
+            <div class="table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Location & District</th>
+                    <th>Risk Classification</th>
+                    <th>24h Rainfall</th>
+                    <th>Soil Moisture</th>
+                    <th>Slope Angle</th>
+                    <th>Elevation</th>
+                    <th>Last Update</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-zones-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 2: LIVE RISK MAP -->
+        <!-- ================================================================== -->
+        <section id="view-map" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2>Interactive Dynamic Risk GIS Map</h2>
+              <p>Real-time spatial visualization of landslide susceptibility, precipitation isohyets, and field incident markers.</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-secondary btn-sm" onclick="LandslideMap.flyToLocation(11.3530, 76.7959, 13)">Focus Coonoor (Critical)</button>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideMap.flyToLocation(11.5432, 76.1245, 13)">Focus Wayanad (Critical)</button>
+            </div>
+          </div>
+
+          <div class="map-viewport-wrapper">
+            <div id="leaflet-risk-map"></div>
+
+            <!-- Floating Layer Controls -->
+            <div class="map-floating-panel">
+              <div style="font-weight: 700; font-size: 0.8rem; color: #0f172a; text-transform: uppercase;">🗺️ Map Layers</div>
+              <div class="map-layer-selector">
+                <label class="layer-checkbox-label">
+                  <input type="checkbox" checked onchange="LandslideMap.toggleLayer('satellite', this.checked)"> Satellite Imagery
+                </label>
+                <label class="layer-checkbox-label">
+                  <input type="checkbox" checked onchange="LandslideMap.toggleLayer('riskPolygons', this.checked)"> Risk Zones (Polygons)
+                </label>
+                <label class="layer-checkbox-label">
+                  <input type="checkbox" checked onchange="LandslideMap.toggleLayer('heatmap', this.checked)"> Rainfall Radar Heatmap
+                </label>
+                <label class="layer-checkbox-label">
+                  <input type="checkbox" checked onchange="LandslideMap.toggleLayer('incidents', this.checked)"> Historical Landslide Scars
+                </label>
+                <label class="layer-checkbox-label">
+                  <input type="checkbox" checked onchange="LandslideMap.toggleLayer('citizenReports', this.checked)"> Citizen Hazard Reports
+                </label>
+              </div>
+            </div>
+
+            <!-- Map Legend Box -->
+            <div class="map-legend-box">
+              <div class="map-legend-title">Hazard Legend</div>
+              <div class="legend-row"><span class="legend-color-chip chip-crit"></span> <span>81–100% Critical Risk</span></div>
+              <div class="legend-row"><span class="legend-color-chip chip-high"></span> <span>61–80% High Risk</span></div>
+              <div class="legend-row"><span class="legend-color-chip chip-mod"></span> <span>31–60% Moderate Risk</span></div>
+              <div class="legend-row"><span class="legend-color-chip chip-low"></span> <span>0–30% Low Risk</span></div>
+              <div class="legend-row"><span class="legend-color-chip chip-incident"></span> <span>Historical Landslide</span></div>
+              <div class="legend-row"><span class="legend-color-chip chip-citizen"></span> <span>Citizen Report Pin</span></div>
+            </div>
+
+            <!-- Side Inspection Drawer -->
+            <div class="map-inspection-drawer" id="map-inspection-drawer">
+              <div class="drawer-header">
+                <div>
+                  <h3 id="drawer-location-name" style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">Location Details</h3>
+                  <p id="drawer-village-district" style="font-size: 0.775rem; color: #64748b;">Village, District</p>
+                </div>
+                <button onclick="LandslideMap.closeInspectionDrawer()" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">✕</button>
+              </div>
+              <div class="drawer-body">
+                <div style="margin-bottom: 1rem;">
+                  <span id="drawer-risk-badge" class="risk-badge CRITICAL">CRITICAL RISK (87%)</span>
+                </div>
+
+                <div class="drawer-metric-grid">
+                  <div class="drawer-metric-card">
+                    <div class="drawer-metric-label">24h Rainfall</div>
+                    <div class="drawer-metric-val" id="drawer-rainfall">162 mm</div>
+                  </div>
+                  <div class="drawer-metric-card">
+                    <div class="drawer-metric-label">Soil Moisture</div>
+                    <div class="drawer-metric-val" id="drawer-soil">88%</div>
+                  </div>
+                  <div class="drawer-metric-card">
+                    <div class="drawer-metric-label">Slope Gradient</div>
+                    <div class="drawer-metric-val" id="drawer-slope">39°</div>
+                  </div>
+                  <div class="drawer-metric-card">
+                    <div class="drawer-metric-label">Elevation MSL</div>
+                    <div class="drawer-metric-val" id="drawer-elevation">1850 m</div>
+                  </div>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px solid var(--border-light); padding: 0.85rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.8rem;">
+                  <div><b>Regolith Soil:</b> <span id="drawer-geology">Clayey Gneiss Regolith</span></div>
+                  <div><b>AI Model Confidence:</b> <span id="drawer-confidence">95.4%</span></div>
+                </div>
+
+                <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a; margin-bottom: 0.5rem;">AI Hazard Diagnosis:</div>
+                <ul id="drawer-reasons-list" style="list-style: none; padding: 0; font-size: 0.8rem; color: #334155;"></ul>
+
+                <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 1.25rem;" onclick="LandslideApp.navigateTo('analysis')">
+                  Open Full Location Analysis →
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 3: LOCATION ANALYSIS -->
+        <!-- ================================================================== -->
+        <section id="view-analysis" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2 id="analysis-title">Location Risk Analysis</h2>
+              <p id="analysis-district">Detailed geotechnical parameters, multi-factor weight breakdown, and terrain profile.</p>
+              <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;" id="analysis-coords"></div>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-secondary btn-sm" onclick="ExportUtils.printRiskReport(LandslideApp.currentLocationId)">Print Risk Report</button>
+            </div>
+          </div>
+
+          <div class="grid-cols-3" style="margin-bottom: 1.5rem;">
+            <!-- Big Risk Probability Indicator Card -->
+            <div class="card" id="analysis-score-card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2.5rem 1.5rem;">
+              <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em;">LANDSLIDE RISK PROBABILITY</div>
+              <div style="font-size: 3.5rem; font-weight: 800; color: #0f172a; line-height: 1.1; margin: 0.5rem 0;" id="analysis-risk-score">87.2%</div>
+              <div class="risk-badge CRITICAL" id="analysis-risk-label" style="font-size: 0.9rem; padding: 0.35rem 1rem;">CRITICAL RISK</div>
+              <p style="font-size: 0.775rem; color: #64748b; margin-top: 0.75rem;">Breached regional geotechnical stability threshold</p>
+            </div>
+
+            <!-- Contributing AI Factors (Bars) -->
+            <div class="card" style="grid-column: span 2;">
+              <div class="card-header">
+                <h3 class="card-title">📊 Contributing Risk Factors (AI Weighted Decomposition)</h3>
+              </div>
+              <div id="analysis-factors-list"></div>
+            </div>
+          </div>
+
+          <!-- AI Natural Language Explanations & Geotechnical Specs -->
+          <div class="grid-cols-2">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">🧠 AI Scientific Hazard Explanation</h3>
+              </div>
+              <div style="font-size: 0.85rem; color: #475569; margin-bottom: 0.75rem;">
+                Dynamic multi-source diagnostic reasoning generated by the ensemble prediction engine:
+              </div>
+              <ul id="analysis-ai-explanations" style="list-style: none; padding: 0;"></ul>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">⛰️ Geotechnical & Site Specifications</h3>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.85rem;">
+                <div class="drawer-metric-card">
+                  <div class="drawer-metric-label">Regolith Soil Type</div>
+                  <div style="font-weight: 700; color: #0f172a;" id="spec-soil-type">Lateritic Red Loam</div>
+                </div>
+                <div class="drawer-metric-card">
+                  <div class="drawer-metric-label">Bedrock Geology</div>
+                  <div style="font-weight: 700; color: #0f172a;" id="spec-geology">Fissured Charnockite</div>
+                </div>
+                <div class="drawer-metric-card">
+                  <div class="drawer-metric-label">Slope Steepness</div>
+                  <div style="font-weight: 700; color: #0f172a;" id="spec-slope">39.0° Inclination</div>
+                </div>
+                <div class="drawer-metric-card">
+                  <div class="drawer-metric-label">Pore-Water Pressure</div>
+                  <div style="font-weight: 700; color: #0f172a;" id="spec-pore-pressure">58.6 kPa</div>
+                </div>
+                <div class="drawer-metric-card">
+                  <div class="drawer-metric-label">Ground Vibration</div>
+                  <div style="font-weight: 700; color: #0f172a;" id="spec-vibration">0.42 mm/s</div>
+                </div>
+                <div class="drawer-metric-card">
+                  <div class="drawer-metric-label">Historical Landslide Scars</div>
+                  <div style="font-weight: 700; color: #0f172a;" id="spec-history-count">22 Events</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 4: ENVIRONMENTAL MONITORING -->
+        <!-- ================================================================== -->
+        <section id="view-environment" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2>Environmental Telemetry Monitoring</h2>
+              <p>Continuous data feeds from AWS weather stations, Doppler precipitation radars, and subsurface sensors.</p>
+            </div>
+            <div class="page-actions">
+              <div class="tabs-nav" style="margin-bottom: 0;">
+                <button class="tab-btn active" onclick="LandslideCharts.initEnvironmentalCharts('24h')">Last 24 Hours</button>
+                <button class="tab-btn" onclick="LandslideCharts.initEnvironmentalCharts('7d')">Last 7 Days</button>
+                <button class="tab-btn" onclick="LandslideCharts.initEnvironmentalCharts('30d')">Last 30 Days</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-cols-4" style="margin-bottom: 1.5rem;">
+            <div class="kpi-card kpi-info">
+              <div class="kpi-label">LOCATION</div>
+              <div style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin-top: 4px;" id="env-loc-name">Coonoor Corridor</div>
+            </div>
+            <div class="kpi-card kpi-high">
+              <div class="kpi-label">24H PRECIPITATION</div>
+              <div class="kpi-number" style="font-size: 1.6rem; color: #1e40af;" id="env-rain-val">162 mm</div>
+            </div>
+            <div class="kpi-card kpi-high">
+              <div class="kpi-label">SOIL SATURATION</div>
+              <div class="kpi-number" style="font-size: 1.6rem; color: #0284c7;" id="env-soil-val">88%</div>
+            </div>
+            <div class="kpi-card kpi-high">
+              <div class="kpi-label">PORE PRESSURE</div>
+              <div class="kpi-number" style="font-size: 1.6rem; color: #d97706;" id="env-pore-val">58.6 kPa</div>
+            </div>
+          </div>
+
+          <div class="grid-cols-2" style="margin-bottom: 1.5rem;">
+            <div class="card" style="height: 340px;">
+              <div class="card-header">
+                <h3 class="card-title">🌧️ Precipitation & Cumulative Rainfall Curve</h3>
+              </div>
+              <div style="height: 240px; position: relative;">
+                <canvas id="chart-rainfall"></canvas>
+              </div>
+            </div>
+
+            <div class="card" style="height: 340px;">
+              <div class="card-header">
+                <h3 class="card-title">💧 Subsurface Soil Moisture & Pore-Water Saturation</h3>
+              </div>
+              <div style="height: 240px; position: relative;">
+                <canvas id="chart-soil-moisture"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="height: 320px;">
+            <div class="card-header">
+              <h3 class="card-title">🌡️ Relative Humidity & Ambient Temperature Micro-climate</h3>
+            </div>
+            <div style="height: 220px; position: relative;">
+              <canvas id="chart-atmospheric"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 5: AI PREDICTION & WHAT-IF SIMULATOR -->
+        <!-- ================================================================== -->
+        <section id="view-prediction" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2>AI / Machine Learning Hazard Prediction Engine</h2>
+              <p>Model inference score, susceptibility fingerprint, confidence metrics, and interactive What-If scenario simulation.</p>
+            </div>
+          </div>
+
+          <div class="grid-cols-3" style="margin-bottom: 1.5rem;">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">🧠 Model Inference Metrics</h3>
+              </div>
+              <div style="margin-bottom: 1rem;">
+                <div style="font-size: 0.75rem; color: #64748b; font-weight: 700;">CURRENT RISK PROBABILITY</div>
+                <div style="font-size: 2.5rem; font-weight: 800; color: #991b1b;" id="pred-score-val">87.2%</div>
+                <div class="risk-badge CRITICAL" id="pred-category-val">CRITICAL</div>
+              </div>
+              <div style="border-top: 1px solid var(--border-light); padding-top: 0.75rem; font-size: 0.85rem;">
+                <div><b>Ensemble Architecture:</b> Random Forest + LSTM</div>
+                <div><b>Model Confidence:</b> <span id="pred-confidence-val" style="color: #1e40af; font-weight: 700;">94.2%</span></div>
+                <div><b>Feature Dimensions:</b> 6 Ingestion Streams</div>
+              </div>
+            </div>
+
+            <div class="card" style="grid-column: span 2; height: 320px;">
+              <div class="card-header">
+                <h3 class="card-title">🕸️ AI Susceptibility Radar Fingerprint</h3>
+              </div>
+              <div style="height: 230px; position: relative;">
+                <canvas id="chart-ai-radar"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Explanation Box -->
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+              <h3 class="card-title">💡 Dynamic AI Diagnostic Explanation ("Why is this area risky?")</h3>
+            </div>
+            <div id="pred-explanation-box"></div>
+          </div>
+
+          <!-- What-If Scenario Simulation Box -->
+          <div class="card" style="background: #fafcff; border: 2px dashed #bfdbfe;">
+            <div class="card-header">
+              <h3 class="card-title">🧪 What-If Scenario Simulation Tool</h3>
+              <span style="font-size: 0.75rem; color: #1e40af; font-weight: 700;">Interactive AI Stress Test</span>
+            </div>
+            <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1.25rem;">
+              Simulate hypothetical monsoon cloudbursts or soil saturation shifts to test how the AI model re-evaluates risk in real time.
+            </p>
+
+            <div class="grid-cols-3" style="margin-bottom: 1.5rem;">
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a;">24h Rainfall: <span id="sim-rain-val" style="color:#1e40af;">150 mm</span></label>
+                <input type="range" id="sim-rain-slider" min="0" max="350" value="150" style="width: 100%; margin-top: 6px;">
+              </div>
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a;">Soil Moisture: <span id="sim-soil-val" style="color:#0284c7;">80%</span></label>
+                <input type="range" id="sim-soil-slider" min="10" max="100" value="80" style="width: 100%; margin-top: 6px;">
+              </div>
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a;">Slope Gradient: <span id="sim-slope-val" style="color:#d97706;">35°</span></label>
+                <input type="range" id="sim-slope-slider" min="5" max="60" value="35" style="width: 100%; margin-top: 6px;">
+              </div>
+            </div>
+
+            <div style="background: white; border: 1px solid var(--border-light); padding: 1rem 1.5rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <div style="font-size: 0.75rem; font-weight: 700; color: #64748b;">SIMULATED AI PREDICTED RISK</div>
+                <div style="font-size: 2rem; font-weight: 800; color: #0f172a;" id="sim-predicted-score">82.4%</div>
+              </div>
+              <div>
+                <span class="risk-badge CRITICAL" id="sim-predicted-cat" style="font-size: 1rem; padding: 0.5rem 1.25rem;">CRITICAL RISK</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 6: RISK TRENDS -->
+        <!-- ================================================================== -->
+        <section id="view-trends" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2>Risk Trend & Temporal Forecast Trajectory</h2>
+              <p>Historical progression and AI multi-day risk forecasting (<b id="trend-location-name">Coonoor Corridor</b>).</p>
+            </div>
+            <div class="page-actions">
+              <span class="risk-badge CRITICAL" id="trend-increasing-badge" style="display: none;">
+                🚨 RISK INCREASING OVER TIME
+              </span>
+            </div>
+          </div>
+
+          <!-- Forecast Metric Pills -->
+          <div class="grid-cols-4" style="margin-bottom: 1.5rem;">
+            <div class="kpi-card">
+              <div class="kpi-label">PAST 24 HOURS</div>
+              <div class="kpi-number" id="trend-val-past" style="font-size: 1.5rem;">71.5%</div>
+              <div class="kpi-subtext">Baseline initial saturation</div>
+            </div>
+            <div class="kpi-card kpi-high">
+              <div class="kpi-label">CURRENT (NOW)</div>
+              <div class="kpi-number" id="trend-val-now" style="font-size: 1.5rem; color: #991b1b;">87.2%</div>
+              <div class="kpi-subtext">Active critical state</div>
+            </div>
+            <div class="kpi-card kpi-high">
+              <div class="kpi-label">PREDICTED IN 6 HOURS</div>
+              <div class="kpi-number" id="trend-val-6h" style="font-size: 1.5rem; color: #991b1b;">91.5%</div>
+              <div class="kpi-subtext">Incoming convective cloudburst</div>
+            </div>
+            <div class="kpi-card kpi-high">
+              <div class="kpi-label">PREDICTED IN 24 HOURS</div>
+              <div class="kpi-number" id="trend-val-24h" style="font-size: 1.5rem; color: #991b1b;">94.8%</div>
+              <div class="kpi-subtext">Sustained debris flow hazard</div>
+            </div>
+          </div>
+
+          <div class="card" style="height: 380px;">
+            <div class="card-header">
+              <h3 class="card-title">📈 Temporal Risk Progression Curve (Past 24h → Now → +7 Days Forecast)</h3>
+            </div>
+            <div style="height: 280px; position: relative;">
+              <canvas id="chart-risk-trend-trajectory"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 7: CITIZEN REPORTING -->
+        <!-- ================================================================== -->
+        <section id="view-citizen-reports" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2>Citizen Hazard Reporting Portal</h2>
+              <p>Empowering local residents and field staff to report ground tension cracks, rockfall, and spring emergence.</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('citizen-report-form').scrollIntoView({behavior: 'smooth'})">
+                + Submit New Hazard Report
+              </button>
+            </div>
+          </div>
+
+          <!-- Submission Form Card -->
+          <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+              <h3 class="card-title">📝 Report a Ground Anomaly or Landslide Precursor</h3>
+            </div>
+            <form id="citizen-report-form">
+              <div class="grid-cols-2" style="margin-bottom: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a; display: block; margin-bottom: 4px;">Full Name *</label>
+                  <input type="text" name="reporter_name" required placeholder="e.g. Vignesh R." style="width: 100%; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.85rem;">
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a; display: block; margin-bottom: 4px;">Phone / Email Contact *</label>
+                  <input type="text" name="contact_info" required placeholder="+91 98401 23456" style="width: 100%; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.85rem;">
+                </div>
+              </div>
+
+              <div class="grid-cols-3" style="margin-bottom: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a; display: block; margin-bottom: 4px;">Location Landmark / Village *</label>
+                  <input type="text" name="location_name" required placeholder="e.g. Marapalam Hairpin Bend 3" style="width: 100%; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.85rem;">
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a; display: block; margin-bottom: 4px;">District *</label>
+                  <select name="district" style="width: 100%; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.85rem;">
+                    <option value="Nilgiris">Nilgiris (Tamil Nadu)</option>
+                    <option value="Wayanad">Wayanad (Kerala)</option>
+                    <option value="Idukki">Idukki (Kerala)</option>
+                    <option value="Chamoli">Chamoli (Uttarakhand)</option>
+                    <option value="Shimla">Shimla (Himachal Pradesh)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a; display: block; margin-bottom: 4px;">Observation Type *</label>
+                  <select name="report_type" style="width: 100%; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.85rem;">
+                    <option value="Ground cracks">Ground cracks (Tensile fissures)</option>
+                    <option value="Soil movement">Soil movement / Creeping trees</option>
+                    <option value="Rockfall">Rockfall / Boulder displacement</option>
+                    <option value="Water accumulation">Sudden spring emergence / Mud water</option>
+                    <option value="Landslide">Active Landslide / Road Breach</option>
+                    <option value="Other observations">Other observations</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- GPS Coordinates Row with Geolocation button -->
+              <div class="grid-cols-2" style="margin-bottom: 1rem; background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-light);">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a;">Latitude / Longitude Coordinates</label>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-use-my-gps">📍 Use My Current GPS</button>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" name="latitude" id="report-latitude" value="11.3530" placeholder="Latitude" style="width: 50%; padding: 0.45rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-light); font-size: 0.8rem;">
+                    <input type="text" name="longitude" id="report-longitude" value="76.7959" placeholder="Longitude" style="width: 50%; padding: 0.45rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-light); font-size: 0.8rem;">
+                  </div>
+                  <div id="gps-status-indicator" style="font-size: 0.725rem; color: #1e40af; margin-top: 4px;"></div>
+                </div>
+
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a; display: block; margin-bottom: 4px;">Photo Attachment</label>
+                  <input type="file" id="report-photo-input" accept="image/*" style="font-size: 0.8rem;">
+                  <div id="photo-preview-box" style="margin-top: 6px;"></div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 1.25rem;">
+                <label style="font-size: 0.8rem; font-weight: 700; color: #0f172a; display: block; margin-bottom: 4px;">Detailed Description *</label>
+                <textarea name="description" rows="3" required placeholder="Describe what you observed (e.g. width of crack, rate of water seepage, affected road/building)..." style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.85rem; font-family: inherit;"></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem;">
+                🚀 Submit Hazard Report to Disaster Control
+              </button>
+            </form>
+          </div>
+
+          <!-- Citizen Reports Registry Table -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">📋 Crowd-Sourced Field Hazard Reports</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-secondary btn-sm" onclick="CitizenReporting.renderReportsTable('ALL')">All</button>
+                <button class="btn btn-secondary btn-sm" onclick="CitizenReporting.renderReportsTable('Verified')">Verified</button>
+                <button class="btn btn-secondary btn-sm" onclick="CitizenReporting.renderReportsTable('Pending')">Pending</button>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Report ID</th>
+                    <th>Location & Coordinates</th>
+                    <th>Anomaly Type</th>
+                    <th>Citizen Description</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Review Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="citizen-reports-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 8: ALERTS & WARNINGS -->
+        <!-- ================================================================== -->
+        <section id="view-alerts" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2>Early Warning Alerts & Action Protocols</h2>
+              <p>Automated location-specific risk advisories, public notification feeds, and CAP alert broadcasting.</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-primary btn-sm" onclick="EarlyWarningSystem.openBroadcastModal('ALT-2026-091')">
+                📡 Dispatch Public Siren / SMS
+              </button>
+            </div>
+          </div>
+
+          <div class="tabs-nav">
+            <button class="tab-btn active" onclick="EarlyWarningSystem.renderAlertFeed('ALL')">All Alerts</button>
+            <button class="tab-btn" onclick="EarlyWarningSystem.renderAlertFeed('ACTIVE')">Active Warnings</button>
+            <button class="tab-btn" onclick="EarlyWarningSystem.renderAlertFeed('CRITICAL')">Critical Red Alerts</button>
+            <button class="tab-btn" onclick="EarlyWarningSystem.renderAlertFeed('RESOLVED')">Resolved</button>
+          </div>
+
+          <div id="alerts-feed-container"></div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 9: HISTORICAL LANDSLIDE DATA -->
+        <!-- ================================================================== -->
+        <section id="view-history" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2>Historical Landslide Disaster Inventory (2018–2025)</h2>
+              <p>Archive of documented slope failures, rainfall correlations, and past casualty impact assessments.</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-secondary btn-sm" onclick="ExportUtils.downloadCSV()">Download Full CSV Archive</button>
+            </div>
+          </div>
+
+          <div class="grid-cols-2" style="margin-bottom: 1.5rem;">
+            <div class="card" style="height: 320px;">
+              <div class="card-header">
+                <h3 class="card-title">📊 Annual Incident Frequency (2018–2025)</h3>
+              </div>
+              <div style="height: 220px; position: relative;">
+                <canvas id="chart-history-year"></canvas>
+              </div>
+            </div>
+
+            <div class="card" style="height: 320px;">
+              <div class="card-header">
+                <h3 class="card-title">🌧️ 24h Precipitation vs Incident Severity Correlation</h3>
+              </div>
+              <div style="height: 220px; position: relative;">
+                <canvas id="chart-history-correlation"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">📜 Documented Landslide Event Records</h3>
+            </div>
+            <div class="table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>District</th>
+                    <th>Severity</th>
+                    <th>Prior 24h Rain</th>
+                    <th>Casualties</th>
+                    <th>Infrastructure & Slope Damage Summary</th>
+                  </tr>
+                </thead>
+                <tbody id="history-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 10: SYSTEM WORKFLOW VISUALIZATION -->
+        <!-- ================================================================== -->
+        <section id="view-workflow" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2>Interactive System Workflow & Pipeline Architecture</h2>
+              <p>Interactive exploration of the end-to-end data processing workflow from satellite ingestion to disaster early warning.</p>
+            </div>
+          </div>
+
+          <div class="grid-cols-2" style="gap: 2rem;">
+            <!-- Stepper Nodes -->
+            <div class="workflow-stepper" id="workflow-steps-container"></div>
+
+            <!-- Active Stage Deep-Dive Card -->
+            <div>
+              <div id="workflow-detail-display" style="position: sticky; top: 90px;"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 11: ADMIN & GEE DATA HEALTH -->
+        <!-- ================================================================== -->
+        <section id="view-admin" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2>System Health & Data Ingestion Pipelines</h2>
+              <p>Operational status of Google Earth Engine, IMD weather feeds, NASA SMAP, and AI inference engines.</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-secondary btn-sm" onclick="LandslideApp.showToast('All APIs re-pinged: 100% Operational', 'success')">
+                Ping All Services
+              </button>
+            </div>
+          </div>
+
+          <div class="grid-cols-3" id="admin-datasources-grid" style="margin-bottom: 2rem;"></div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">⚙️ Google Earth Engine & API Connection Architecture</h3>
+            </div>
+            <div style="font-size: 0.85rem; color: #334155; line-height: 1.6;">
+              <p style="margin-bottom: 0.5rem;">
+                <b>Security Architecture:</b> The system utilizes a secure backend proxy layer (FastAPI / Node.js) with environment variable isolation (<code>.env.example</code>). No Google Earth Engine private keys or AWS credentials are exposed to frontend client bundles.
+              </p>
+              <p>
+                <b>Data Failover:</b> If satellite connectivity encounters latency, the AI scoring engine seamlessly transitions to local in-situ sensor telemetry and historical hazard priors.
+              </p>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- MODAL: BROADCAST ALERT SIMULATOR -->
+  <!-- ====================================================================== -->
+  <div class="modal-overlay" id="broadcast-alert-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">📡 Broadcast Emergency CAP Alert</h3>
+        <button onclick="EarlyWarningSystem.closeBroadcastModal()" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">
+          You are about to transmit an emergency warning to local citizens and disaster response teams via SMS Gateway and Public Sirens.
+        </p>
+        <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+          <div style="font-weight: 700; color: #991b1b; font-size: 0.9rem;" id="modal-broadcast-headline">Critical Landslide Warning</div>
+          <div style="font-size: 0.8rem; color: #7f1d1d; margin-top: 4px;" id="modal-broadcast-target">Target: All registered SIMs in sector</div>
+          <div style="font-size: 0.8rem; color: #334155; margin-top: 8px;" id="modal-broadcast-action">Action required</div>
+        </div>
+        <div style="font-size: 0.8rem; color: #64748b;">
+          Protocol: <b>NDMA Common Alerting Protocol (CAP-IN v1.2)</b>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="EarlyWarningSystem.closeBroadcastModal()">Cancel</button>
+        <button class="btn btn-danger btn-sm" onclick="EarlyWarningSystem.executeBroadcast()">Confirm & Transmit Broadcast</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Application Logic -->
+  <script src="js/data.js"></script>
+  <script src="js/ai-engine.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/citizen-reports.js"></script>
+  <script src="js/alerts.js"></script>
+  <script src="js/export-utils.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
