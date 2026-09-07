@@ -70,9 +70,20 @@ const LandslideApp = {
       }
     });
 
-    // Close mobile drawer if open
+    // Update active mobile bottom nav buttons
+    document.querySelectorAll(".bottom-nav-btn").forEach(bbtn => {
+      if (bbtn.getAttribute("data-bview") === viewName) {
+        bbtn.classList.add("active");
+      } else {
+        bbtn.classList.remove("active");
+      }
+    });
+
+    // Close mobile drawer and backdrop if open
     const sidebar = document.getElementById("main-sidebar");
+    const backdrop = document.getElementById("sidebar-backdrop");
     if (sidebar) sidebar.classList.remove("open");
+    if (backdrop) backdrop.classList.remove("active");
 
     // Trigger view-specific renderers
     this.onViewLoaded(viewName);
@@ -372,13 +383,34 @@ const LandslideApp = {
       });
     });
 
-    const hamburger = document.getElementById("hamburger-btn");
-    const sidebar = document.getElementById("main-sidebar");
-    if (hamburger && sidebar) {
-      hamburger.addEventListener("click", () => {
-        sidebar.classList.toggle("open");
+    document.querySelectorAll(".bottom-nav-btn[data-bview]").forEach(bbtn => {
+      bbtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const view = bbtn.getAttribute("data-bview");
+        this.navigateTo(view);
       });
-    }
+    });
+
+    const hamburger = document.getElementById("hamburger-btn");
+    const mobileMenuTrigger = document.getElementById("mobile-menu-trigger");
+    const sidebar = document.getElementById("main-sidebar");
+    const backdrop = document.getElementById("sidebar-backdrop");
+
+    const toggleSidebar = () => {
+      if (sidebar) {
+        const isOpen = sidebar.classList.toggle("open");
+        if (backdrop) {
+          backdrop.classList.toggle("active", isOpen);
+        }
+      }
+    };
+
+    if (hamburger) hamburger.addEventListener("click", toggleSidebar);
+    if (mobileMenuTrigger) mobileMenuTrigger.addEventListener("click", toggleSidebar);
+    if (backdrop) backdrop.addEventListener("click", () => {
+      if (sidebar) sidebar.classList.remove("open");
+      backdrop.classList.remove("active");
+    });
   },
 
   bindRoleSwitcher() {

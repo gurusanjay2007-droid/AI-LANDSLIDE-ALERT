@@ -1,6 +1,7 @@
 /* ==============================================================================
    AI-Based Landslide Risk Monitoring System - Main Design System
    Theme: Pure White, Clean, Professional, Modern, High-Legibility
+   Mobile-First Responsive Design System
    ============================================================================== */
 
 :root {
@@ -57,7 +58,8 @@
 
   /* Layout Constants */
   --sidebar-width: 270px;
-  --header-height: 70px;
+  --header-height: 64px;
+  --bottom-nav-height: 60px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -72,6 +74,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -89,6 +92,23 @@ body {
   min-height: 100vh;
   width: 100vw;
   position: relative;
+}
+
+/* Sidebar Backdrop for Mobile */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 95;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+.sidebar-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Sidebar Navigation */
@@ -128,6 +148,7 @@ body {
   font-weight: 700;
   font-size: 1.1rem;
   box-shadow: 0 2px 4px rgba(30, 64, 175, 0.2);
+  flex-shrink: 0;
 }
 
 .logo-title h1 {
@@ -153,6 +174,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .nav-section-title {
@@ -248,12 +270,12 @@ body {
   min-width: 0;
 }
 
-/* Header */
+/* Top Sticky Header */
 .top-header {
   height: var(--header-height);
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-light);
-  padding: 0 2rem;
+  padding: 0 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -266,46 +288,62 @@ body {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
+  min-width: 0;
 }
 
 .hamburger-btn {
   display: none;
-  background: none;
+  background: white;
   border: 1px solid var(--border-light);
-  padding: 0.5rem;
+  padding: 0.45rem 0.65rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: bold;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.hamburger-btn:active {
+  background-color: var(--bg-subtle);
 }
 
 .location-context {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   background-color: var(--bg-subtle);
-  padding: 0.4rem 0.9rem;
+  padding: 0.35rem 0.75rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-light);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.6rem;
+  flex-shrink: 0;
 }
 
 .update-ticker {
-  font-size: 0.8rem;
+  font-size: 0.775rem;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   background-color: #f8fafc;
-  padding: 0.35rem 0.75rem;
+  padding: 0.35rem 0.65rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-light);
 }
@@ -313,13 +351,13 @@ body {
 .role-switcher {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
+  gap: 0.35rem;
+  font-size: 0.775rem;
 }
 
 .role-select {
-  padding: 0.35rem 0.6rem;
-  font-size: 0.8rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.775rem;
   font-weight: 600;
   color: var(--primary);
   background-color: var(--primary-subtle);
@@ -329,40 +367,10 @@ body {
   outline: none;
 }
 
-.header-btn {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-light);
-  padding: 0.5rem;
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  cursor: pointer;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.header-btn:hover {
-  background-color: var(--bg-subtle);
-  color: var(--primary);
-  border-color: var(--border-medium);
-}
-
-.notification-badge-dot {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--risk-high);
-}
-
 /* Page Content Viewport */
 .content-body {
   flex: 1;
-  padding: 1.75rem 2rem 3rem 2rem;
+  padding: 1.5rem 1.75rem 3rem 1.75rem;
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;
@@ -370,34 +378,89 @@ body {
 
 /* Page Headers */
 .page-title-banner {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .page-title-banner h2 {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
 
 .page-title-banner p {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  margin-top: 0.2rem;
+  margin-top: 0.15rem;
 }
 
 .page-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-/* Responsive Media Queries */
+/* Mobile Bottom Navigation Bar */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottom-nav-height);
+  background-color: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border-light);
+  z-index: 90;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+.bottom-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.675rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  min-width: 55px;
+}
+
+.bottom-nav-btn span.b-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.bottom-nav-btn.active {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.bottom-nav-btn.active span.b-icon {
+  transform: scale(1.1);
+}
+
+/* ==============================================================================
+   RESPONSIVE MEDIA QUERIES (Mobile & Tablet Optimization)
+   ============================================================================== */
+
 @media (max-width: 1024px) {
   .sidebar {
     transform: translateX(-100%);
@@ -413,18 +476,103 @@ body {
     display: flex;
   }
   .top-header {
-    padding: 0 1.25rem;
+    padding: 0 1rem;
   }
   .content-body {
-    padding: 1.25rem;
+    padding: 1.25rem 1rem 5.5rem 1rem;
+  }
+  .mobile-bottom-nav {
+    display: flex;
+  }
+  .desktop-only {
+    display: none !important;
   }
 }
 
-@media (max-width: 640px) {
-  .header-right .update-ticker, .role-switcher label {
+@media (max-width: 768px) {
+  .top-header {
+    height: 56px;
+  }
+  
+  .location-context {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    max-width: 180px;
+  }
+  
+  .location-context span:first-child {
     display: none;
   }
+
+  .header-right .btn:not(.btn-primary) {
+    display: none;
+  }
+  
   .page-title-banner h2 {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
+  }
+  
+  .page-title-banner p {
+    font-size: 0.8rem;
+  }
+
+  .page-actions {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+  
+  .page-actions select, .page-actions button {
+    flex: 1;
+  }
+
+  /* Grid Conversions for Mobile */
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .card {
+    padding: 1rem !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  .kpi-card {
+    padding: 0.85rem 1rem !important;
+  }
+
+  .kpi-number {
+    font-size: 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .location-context {
+    max-width: 130px;
+  }
+  
+  .top-header {
+    padding: 0 0.75rem;
+  }
+
+  .content-body {
+    padding: 0.85rem 0.75rem 5.5rem 0.75rem;
+  }
+
+  .kpi-label {
+    font-size: 0.7rem;
   }
 }
