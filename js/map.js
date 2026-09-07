@@ -30,28 +30,34 @@ const LandslideMap = {
       return;
     }
 
-    // Centered around Nilgiris / Western Ghats demo cluster (11.39, 76.71)
+    // Global projection (full world)
     riskMap = L.map(containerId, {
-      center: [11.38, 76.74],
-      zoom: 10,
+      center: [20, 15],
+      zoom: 2,
+      minZoom: 2,
+      maxZoom: 18,
+      worldCopyJump: true,
       zoomControl: false
     });
 
     L.control.zoom({ position: 'topleft' }).addTo(riskMap);
 
-    // Base Layers
+    // Base Layers (Full World Coverage)
     const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       maxZoom: 17,
+      noWrap: false,
       attribution: '© OpenTopoMap contributors, SRTM'
     });
 
     const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
+      noWrap: false,
       attribution: '© OpenStreetMap'
     });
 
     const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 18,
+      noWrap: false,
       attribution: '© Esri, Maxar, Earthstar Geographics'
     });
 
@@ -290,5 +296,20 @@ const LandslideMap = {
     if (riskMap) {
       riskMap.flyTo([lat, lng], zoom, { duration: 1.2 });
     }
+  },
+
+  flyToRegion(region) {
+    if (!riskMap) return;
+    const regionPresets = {
+      world: { center: [20, 15], zoom: 2 },
+      india: { center: [20.5937, 78.9629], zoom: 5 },
+      asia: { center: [22.0, 125.0], zoom: 4 },
+      europe: { center: [46.8, 8.5], zoom: 5 },
+      americas: { center: [12.0, -85.0], zoom: 3 },
+      oceania: { center: [-25.0, 150.0], zoom: 4 }
+    };
+
+    const target = regionPresets[region] || regionPresets.world;
+    riskMap.flyTo(target.center, target.zoom, { duration: 1.4 });
   }
 };

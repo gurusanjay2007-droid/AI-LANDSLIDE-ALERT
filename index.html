@@ -335,9 +335,13 @@
               <h2>Interactive Dynamic Risk GIS Map</h2>
               <p>Real-time spatial visualization of landslide susceptibility, precipitation isohyets, and field incident markers.</p>
             </div>
-            <div class="page-actions">
-              <button class="btn btn-secondary btn-sm" onclick="LandslideMap.flyToLocation(11.3530, 76.7959, 13)">Focus Coonoor</button>
-              <button class="btn btn-secondary btn-sm" onclick="LandslideMap.flyToLocation(11.5432, 76.1245, 13)">Focus Wayanad</button>
+            <div class="page-actions" style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+              <button class="btn btn-primary btn-sm" onclick="LandslideMap.flyToRegion('world')">🌐 Full World</button>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideMap.flyToRegion('india')">🇮🇳 India</button>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideMap.flyToRegion('asia')">🌏 East / SE Asia</button>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideMap.flyToRegion('europe')">🏔️ European Alps</button>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideMap.flyToRegion('americas')">⛰️ Americas & Andes</button>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideMap.flyToRegion('oceania')">🏝️ Oceania</button>
             </div>
           </div>
 
