@@ -129,11 +129,53 @@ body {
 
 .sidebar-header {
   height: var(--header-height);
-  padding: 0 1.25rem;
+  padding: 0 1rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   border-bottom: 1px solid var(--border-light);
+}
+
+.sidebar-logo-img {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.header-brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  display: none;
+  flex-shrink: 0;
+  border: 1px solid var(--border-light);
+}
+
+.landing-hero-logo {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 10px 25px -5px rgba(30, 64, 175, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 3px solid white;
+  margin: 0 auto 1.25rem auto;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.landing-hero-logo:hover {
+  transform: scale(1.05);
+}
+
+@media (max-width: 1024px) {
+  .header-brand-logo {
+    display: block;
+  }
 }
 
 .logo-badge {

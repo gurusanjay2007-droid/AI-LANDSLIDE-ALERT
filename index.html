@@ -11,6 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Favicon Logo -->
+  <link rel="icon" type="image/png" href="logo.png">
+
   <!-- Leaflet GIS Mapping CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
@@ -31,7 +34,7 @@
     <!-- ====================================================================== -->
     <aside class="sidebar" id="main-sidebar">
       <div class="sidebar-header">
-        <div class="logo-badge">🛡️</div>
+        <img src="logo.png" alt="Landslide Monitor Logo" class="sidebar-logo-img">
         <div class="logo-title">
           <h1>Landslide Monitor</h1>
           <span>AI Early Warning System</span>
@@ -115,6 +118,7 @@
       <header class="top-header">
         <div class="header-left">
           <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle navigation">☰</button>
+          <img src="logo.png" alt="Landslide Monitor Logo" class="header-brand-logo" onclick="LandslideApp.navigateTo('landing')" style="cursor: pointer;" title="Landslide Monitor">
           
           <div class="location-context">
             <span>📍 Active Sector:</span>
@@ -158,6 +162,7 @@
         <section id="view-landing" class="view-section" style="display: none;">
           <div style="background: white; border: 1px solid var(--border-light); border-radius: 20px; padding: 2.5rem 1.5rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;">
             <div style="max-width: 900px; margin: 0 auto; text-align: center;">
+              <img src="logo.png" alt="Landslide Monitor - AI Early Warning System" class="landing-hero-logo">
               <span style="display: inline-block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase; margin-bottom: 0.75rem;">
                 Autonomous Geospatial Early Warning
               </span>
