@@ -21,7 +21,9 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/map.css">
+  <link rel="stylesheet" href="css/chatbot.css">
 </head>
+
 <body>
 
   <!-- Sidebar Backdrop for Mobile -->
@@ -61,10 +63,16 @@
         </a>
 
         <div class="nav-section-title">Intelligence & AI</div>
+        <a href="#chatbot" class="nav-item" data-view="chatbot">
+          <span class="nav-icon">🤖</span>
+          <span>Landslide AI Assistant</span>
+          <span class="badge-count" style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe;">AI</span>
+        </a>
         <a href="#environment" class="nav-item" data-view="environment">
           <span class="nav-icon">📡</span>
           <span>Environmental Data</span>
         </a>
+
         <a href="#prediction" class="nav-item" data-view="prediction">
           <span class="nav-icon">🧠</span>
           <span>AI Prediction & ML</span>
@@ -226,6 +234,26 @@
             </div>
           </div>
 
+          <!-- Ask Landslide AI Assistant Feature Card -->
+          <div class="dashboard-ask-ai-card">
+            <div class="ask-ai-content">
+              <div class="ask-ai-icon-large">🤖</div>
+              <div class="ask-ai-text">
+                <h3>ASK LANDSLIDE AI</h3>
+                <p>Have a question about current landslide risk, rainfall thresholds, active warnings, or emergency guidance?</p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="LandslideApp.navigateTo('chatbot')">
+                Ask AI Assistant →
+              </button>
+              <button class="btn btn-secondary" onclick="LandslideAIChatbot.openFloatingDrawer()">
+                Open Quick Assistant
+              </button>
+            </div>
+          </div>
+
+
           <!-- KPI Cards Grid -->
           <div class="grid-cols-4" style="margin-bottom: 1.25rem;">
             <div class="kpi-card kpi-high" onclick="LandslideApp.navigateTo('map')">
@@ -352,6 +380,24 @@
 
           <div class="map-viewport-wrapper">
             <div id="leaflet-risk-map"></div>
+
+            <!-- Floating Map Search Bar with Search Button & Autocomplete -->
+            <div class="map-search-container" id="map-search-container">
+              <div class="map-search-bar">
+                <input 
+                  type="text" 
+                  id="map-search-input" 
+                  class="map-search-input" 
+                  placeholder="Search any location, district, city (e.g. Coonoor, Shimla, Valais)..." 
+                  autocomplete="off"
+                  aria-label="Search map location"
+                >
+                <button class="map-search-btn" id="btn-map-search" onclick="LandslideMap.searchLocation()" title="Search location">
+                  🔍 <span>Search</span>
+                </button>
+              </div>
+              <div id="map-search-suggestions" class="map-search-suggestions" style="display: none;"></div>
+            </div>
 
             <!-- Mobile Layer Toggle Trigger -->
             <button class="mobile-layer-toggle-btn" id="mobile-layer-btn" onclick="document.getElementById('map-floating-panel').classList.toggle('open-mobile')">
@@ -758,12 +804,450 @@
                 </div>
                 <div>
                   <label style="font-size: 0.775rem; font-weight: 700; color: #0f172a; display: block; margin-bottom: 3px;">District *</label>
-                  <select name="district" style="width: 100%; padding: 0.45rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.825rem;">
-                    <option value="Nilgiris">Nilgiris (Tamil Nadu)</option>
-                    <option value="Wayanad">Wayanad (Kerala)</option>
-                    <option value="Idukki">Idukki (Kerala)</option>
-                    <option value="Chamoli">Chamoli (Uttarakhand)</option>
-                    <option value="Shimla">Shimla (Himachal Pradesh)</option>
+                  <select name="district" id="citizen-district-select" style="width: 100%; padding: 0.45rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.825rem;">
+                    <!-- INDIA - SOUTHERN STATES -->
+                    <optgroup label="🇮🇳 India - Tamil Nadu">
+                      <option value="Nilgiris" selected>Nilgiris (Tamil Nadu)</option>
+                      <option value="Ariyalur">Ariyalur (Tamil Nadu)</option>
+                      <option value="Chengalpattu">Chengalpattu (Tamil Nadu)</option>
+                      <option value="Chennai">Chennai (Tamil Nadu)</option>
+                      <option value="Coimbatore">Coimbatore (Tamil Nadu)</option>
+                      <option value="Cuddalore">Cuddalore (Tamil Nadu)</option>
+                      <option value="Dharmapuri">Dharmapuri (Tamil Nadu)</option>
+                      <option value="Dindigul">Dindigul (Tamil Nadu)</option>
+                      <option value="Erode">Erode (Tamil Nadu)</option>
+                      <option value="Kallakurichi">Kallakurichi (Tamil Nadu)</option>
+                      <option value="Kanchipuram">Kanchipuram (Tamil Nadu)</option>
+                      <option value="Kanyakumari">Kanyakumari (Tamil Nadu)</option>
+                      <option value="Karur">Karur (Tamil Nadu)</option>
+                      <option value="Krishnagiri">Krishnagiri (Tamil Nadu)</option>
+                      <option value="Madurai">Madurai (Tamil Nadu)</option>
+                      <option value="Mayiladuthurai">Mayiladuthurai (Tamil Nadu)</option>
+                      <option value="Nagapattinam">Nagapattinam (Tamil Nadu)</option>
+                      <option value="Namakkal">Namakkal (Tamil Nadu)</option>
+                      <option value="Perambalur">Perambalur (Tamil Nadu)</option>
+                      <option value="Pudukkottai">Pudukkottai (Tamil Nadu)</option>
+                      <option value="Ramanathapuram">Ramanathapuram (Tamil Nadu)</option>
+                      <option value="Ranipet">Ranipet (Tamil Nadu)</option>
+                      <option value="Salem">Salem (Tamil Nadu)</option>
+                      <option value="Sivaganga">Sivaganga (Tamil Nadu)</option>
+                      <option value="Tenkasi">Tenkasi (Tamil Nadu)</option>
+                      <option value="Thanjavur">Thanjavur (Tamil Nadu)</option>
+                      <option value="Theni">Theni (Tamil Nadu)</option>
+                      <option value="Thoothukudi">Thoothukudi (Tamil Nadu)</option>
+                      <option value="Tiruchirappalli">Tiruchirappalli (Tamil Nadu)</option>
+                      <option value="Tirunelveli">Tirunelveli (Tamil Nadu)</option>
+                      <option value="Tirupathur">Tirupathur (Tamil Nadu)</option>
+                      <option value="Tiruppur">Tiruppur (Tamil Nadu)</option>
+                      <option value="Tiruvallur">Tiruvallur (Tamil Nadu)</option>
+                      <option value="Tiruvannamalai">Tiruvannamalai (Tamil Nadu)</option>
+                      <option value="Tiruvarur">Tiruvarur (Tamil Nadu)</option>
+                      <option value="Vellore">Vellore (Tamil Nadu)</option>
+                      <option value="Viluppuram">Viluppuram (Tamil Nadu)</option>
+                      <option value="Virudhunagar">Virudhunagar (Tamil Nadu)</option>
+                    </optgroup>
+                    <optgroup label="🇮🇳 India - Kerala">
+                      <option value="Wayanad">Wayanad (Kerala)</option>
+                      <option value="Idukki">Idukki (Kerala)</option>
+                      <option value="Alappuzha">Alappuzha (Kerala)</option>
+                      <option value="Ernakulam">Ernakulam (Kerala)</option>
+                      <option value="Kannur">Kannur (Kerala)</option>
+                      <option value="Kasaragod">Kasaragod (Kerala)</option>
+                      <option value="Kollam">Kollam (Kerala)</option>
+                      <option value="Kottayam">Kottayam (Kerala)</option>
+                      <option value="Kozhikode">Kozhikode (Kerala)</option>
+                      <option value="Malappuram">Malappuram (Kerala)</option>
+                      <option value="Palakkad">Palakkad (Kerala)</option>
+                      <option value="Pathanamthitta">Pathanamthitta (Kerala)</option>
+                      <option value="Thiruvananthapuram">Thiruvananthapuram (Kerala)</option>
+                      <option value="Thrissur">Thrissur (Kerala)</option>
+                    </optgroup>
+                    <optgroup label="🇮🇳 India - Karnataka">
+                      <option value="Kodagu">Kodagu / Coorg (Karnataka)</option>
+                      <option value="Chikkamagaluru">Chikkamagaluru (Karnataka)</option>
+                      <option value="Shivamogga">Shivamogga (Karnataka)</option>
+                      <option value="Uttara Kannada">Uttara Kannada (Karnataka)</option>
+                      <option value="Dakshina Kannada">Dakshina Kannada (Karnataka)</option>
+                      <option value="Udupi">Udupi (Karnataka)</option>
+                      <option value="Hassan">Hassan (Karnataka)</option>
+                      <option value="Bengaluru Urban">Bengaluru Urban (Karnataka)</option>
+                      <option value="Bengaluru Rural">Bengaluru Rural (Karnataka)</option>
+                      <option value="Belagavi">Belagavi (Karnataka)</option>
+                      <option value="Ballari">Ballari (Karnataka)</option>
+                      <option value="Dharwad">Dharwad (Karnataka)</option>
+                      <option value="Mysuru">Mysuru (Karnataka)</option>
+                      <option value="Mandya">Mandya (Karnataka)</option>
+                      <option value="Tumakuru">Tumakuru (Karnataka)</option>
+                    </optgroup>
+                    <optgroup label="🇮🇳 India - Andhra Pradesh & Telangana">
+                      <option value="Alluri Sitharama Raju">Alluri Sitharama Raju (Andhra Pradesh)</option>
+                      <option value="Visakhapatnam">Visakhapatnam (Andhra Pradesh)</option>
+                      <option value="Anakapalli">Anakapalli (Andhra Pradesh)</option>
+                      <option value="Chittoor">Chittoor (Andhra Pradesh)</option>
+                      <option value="Tirupati">Tirupati (Andhra Pradesh)</option>
+                      <option value="East Godavari">East Godavari (Andhra Pradesh)</option>
+                      <option value="Guntur">Guntur (Andhra Pradesh)</option>
+                      <option value="Krishna">Krishna (Andhra Pradesh)</option>
+                      <option value="Hyderabad">Hyderabad (Telangana)</option>
+                      <option value="Bhadradri Kothagudem">Bhadradri Kothagudem (Telangana)</option>
+                      <option value="Warangal">Warangal (Telangana)</option>
+                      <option value="Karimnagar">Karimnagar (Telangana)</option>
+                    </optgroup>
+
+                    <!-- INDIA - NORTHERN & HIMALAYAN STATES -->
+                    <optgroup label="🇮🇳 India - Uttarakhand & Himachal Pradesh">
+                      <option value="Chamoli">Chamoli (Uttarakhand)</option>
+                      <option value="Rudraprayag">Rudraprayag (Uttarakhand)</option>
+                      <option value="Uttarkashi">Uttarkashi (Uttarakhand)</option>
+                      <option value="Tehri Garhwal">Tehri Garhwal (Uttarakhand)</option>
+                      <option value="Pithoragarh">Pithoragarh (Uttarakhand)</option>
+                      <option value="Nainital">Nainital (Uttarakhand)</option>
+                      <option value="Almora">Almora (Uttarakhand)</option>
+                      <option value="Bageshwar">Bageshwar (Uttarakhand)</option>
+                      <option value="Dehradun">Dehradun (Uttarakhand)</option>
+                      <option value="Shimla">Shimla (Himachal Pradesh)</option>
+                      <option value="Kullu">Kullu (Himachal Pradesh)</option>
+                      <option value="Mandi">Mandi (Himachal Pradesh)</option>
+                      <option value="Kangra">Kangra (Himachal Pradesh)</option>
+                      <option value="Kinnaur">Kinnaur (Himachal Pradesh)</option>
+                      <option value="Lahaul and Spiti">Lahaul and Spiti (Himachal Pradesh)</option>
+                      <option value="Chamba">Chamba (Himachal Pradesh)</option>
+                      <option value="Solan">Solan (Himachal Pradesh)</option>
+                      <option value="Sirmaur">Sirmaur (Himachal Pradesh)</option>
+                    </optgroup>
+                    <optgroup label="🇮🇳 India - Jammu, Kashmir & Ladakh">
+                      <option value="Anantnag">Anantnag (J&K)</option>
+                      <option value="Baramulla">Baramulla (J&K)</option>
+                      <option value="Doda">Doda (J&K)</option>
+                      <option value="Kishtwar">Kishtwar (J&K)</option>
+                      <option value="Kupwara">Kupwara (J&K)</option>
+                      <option value="Poonch">Poonch (J&K)</option>
+                      <option value="Rajouri">Rajouri (J&K)</option>
+                      <option value="Ramban">Ramban (J&K)</option>
+                      <option value="Reasi">Reasi (J&K)</option>
+                      <option value="Srinagar">Srinagar (J&K)</option>
+                      <option value="Udhampur">Udhampur (J&K)</option>
+                      <option value="Kargil">Kargil (Ladakh)</option>
+                      <option value="Leh">Leh (Ladakh)</option>
+                    </optgroup>
+                    <optgroup label="🇮🇳 India - Maharashtra & Goa">
+                      <option value="Raigad">Raigad (Maharashtra)</option>
+                      <option value="Ratnagiri">Ratnagiri (Maharashtra)</option>
+                      <option value="Sindhudurg">Sindhudurg (Maharashtra)</option>
+                      <option value="Satara">Satara (Maharashtra)</option>
+                      <option value="Pune">Pune / Western Ghats (Maharashtra)</option>
+                      <option value="Kolhapur">Kolhapur (Maharashtra)</option>
+                      <option value="Thane">Thane (Maharashtra)</option>
+                      <option value="Mumbai City">Mumbai City (Maharashtra)</option>
+                      <option value="Nashik">Nashik (Maharashtra)</option>
+                      <option value="North Goa">North Goa</option>
+                      <option value="South Goa">South Goa</option>
+                    </optgroup>
+                    <optgroup label="🇮🇳 India - Eastern & North-Eastern States">
+                      <option value="Darjeeling">Darjeeling (West Bengal)</option>
+                      <option value="Kalimpong">Kalimpong (West Bengal)</option>
+                      <option value="Jalpaiguri">Jalpaiguri (West Bengal)</option>
+                      <option value="Gangtok">Gangtok (Sikkim)</option>
+                      <option value="Mangan">Mangan / North Sikkim (Sikkim)</option>
+                      <option value="Gyalshing">Gyalshing (Sikkim)</option>
+                      <option value="Namchi">Namchi (Sikkim)</option>
+                      <option value="East Khasi Hills">East Khasi Hills / Shillong (Meghalaya)</option>
+                      <option value="West Khasi Hills">West Khasi Hills (Meghalaya)</option>
+                      <option value="Dima Hasao">Dima Hasao / Haflong (Assam)</option>
+                      <option value="Karbi Anglong">Karbi Anglong (Assam)</option>
+                      <option value="Kamrup Metropolitan">Kamrup Metropolitan / Guwahati (Assam)</option>
+                      <option value="Tawang">Tawang (Arunachal Pradesh)</option>
+                      <option value="West Kameng">West Kameng (Arunachal Pradesh)</option>
+                      <option value="East Siang">East Siang (Arunachal Pradesh)</option>
+                      <option value="Imphal West">Imphal West (Manipur)</option>
+                      <option value="Churachandpur">Churachandpur (Manipur)</option>
+                      <option value="Aizawl">Aizawl (Mizoram)</option>
+                      <option value="Kohima">Kohima (Nagaland)</option>
+                      <option value="West Tripura">West Tripura (Tripura)</option>
+                    </optgroup>
+                    <optgroup label="🇮🇳 India - Central & Other States">
+                      <option value="Koraput">Koraput (Odisha)</option>
+                      <option value="Kalahandi">Kalahandi (Odisha)</option>
+                      <option value="Ranchi">Ranchi (Jharkhand)</option>
+                      <option value="East Singhbhum">East Singhbhum (Jharkhand)</option>
+                      <option value="Bastar">Bastar (Chhattisgarh)</option>
+                      <option value="Jabalpur">Jabalpur (Madhya Pradesh)</option>
+                      <option value="Bhopal">Bhopal (Madhya Pradesh)</option>
+                      <option value="Indore">Indore (Madhya Pradesh)</option>
+                      <option value="Sirohi">Sirohi / Mount Abu (Rajasthan)</option>
+                      <option value="Udaipur">Udaipur (Rajasthan)</option>
+                      <option value="Jaipur">Jaipur (Rajasthan)</option>
+                      <option value="Lucknow">Lucknow (Uttar Pradesh)</option>
+                      <option value="Varanasi">Varanasi (Uttar Pradesh)</option>
+                      <option value="Patna">Patna (Bihar)</option>
+                      <option value="New Delhi">New Delhi (Delhi)</option>
+                      <option value="Chandigarh">Chandigarh</option>
+                      <option value="Andaman & Nicobar">Andaman & Nicobar</option>
+                    </optgroup>
+
+                    <!-- ASIA & PACIFIC (GLOBAL) -->
+                    <optgroup label="🇳🇵 Nepal">
+                      <option value="Kathmandu (Nepal)">Kathmandu District</option>
+                      <option value="Pokhara / Kaski (Nepal)">Pokhara / Kaski District</option>
+                      <option value="Sindhupalchok (Nepal)">Sindhupalchok District (High Landslide Risk)</option>
+                      <option value="Gorkha (Nepal)">Gorkha District</option>
+                      <option value="Solukhumbu (Nepal)">Solukhumbu / Everest Region</option>
+                      <option value="Rasuwa (Nepal)">Rasuwa District</option>
+                      <option value="Dhading (Nepal)">Dhading District</option>
+                      <option value="Lalitpur (Nepal)">Lalitpur District</option>
+                    </optgroup>
+                    <optgroup label="🇯🇵 Japan">
+                      <option value="Nagano (Japan)">Nagano Prefecture</option>
+                      <option value="Shizuoka (Japan)">Shizuoka Prefecture / Mt. Fuji Slopes</option>
+                      <option value="Hiroshima (Japan)">Hiroshima Prefecture (Debris Flow Zone)</option>
+                      <option value="Kumamoto (Japan)">Kumamoto Prefecture / Aso Caldera</option>
+                      <option value="Niigata (Japan)">Niigata Prefecture</option>
+                      <option value="Gifu (Japan)">Gifu Prefecture</option>
+                      <option value="Hokkaido (Japan)">Hokkaido / Iburi Region</option>
+                      <option value="Tokyo (Japan)">Tokyo Metropolitan District</option>
+                      <option value="Kanagawa (Japan)">Kanagawa / Hakone Region</option>
+                    </optgroup>
+                    <optgroup label="🇮🇩 Indonesia">
+                      <option value="Cianjur / West Java (Indonesia)">Cianjur Regency (West Java)</option>
+                      <option value="Banjarnegara / Central Java (Indonesia)">Banjarnegara Regency (Central Java)</option>
+                      <option value="Bogor / West Java (Indonesia)">Bogor Regency (Puncak Pass)</option>
+                      <option value="Sumedang / West Java (Indonesia)">Sumedang Regency</option>
+                      <option value="Bali Highlands (Indonesia)">Kintamani / Tabanan (Bali)</option>
+                      <option value="North Sumatra (Indonesia)">Karo / Toba Highland (North Sumatra)</option>
+                      <option value="West Sumatra (Indonesia)">Agam / Bukittinggi (West Sumatra)</option>
+                      <option value="South Sulawesi (Indonesia)">Tana Toraja / Luwu (South Sulawesi)</option>
+                    </optgroup>
+                    <optgroup label="🇵🇭 Philippines">
+                      <option value="Benguet (Philippines)">Benguet / Baguio (Cordillera)</option>
+                      <option value="Itogon (Philippines)">Itogon Mining Sector (Benguet)</option>
+                      <option value="Southern Leyte (Philippines)">Southern Leyte / Guinsaugon</option>
+                      <option value="Cebu Highlands (Philippines)">Cebu Province (Naga / Toledo)</option>
+                      <option value="Davao de Oro (Philippines)">Davao de Oro / Maco</option>
+                      <option value="Mountain Province (Philippines)">Mountain Province / Sagada</option>
+                      <option value="Rizal (Philippines)">Rizal / Sierra Madre Slopes</option>
+                      <option value="Albay (Philippines)">Albay / Mayon Volcano Slopes</option>
+                    </optgroup>
+                    <optgroup label="🇨🇳 China">
+                      <option value="Sichuan (China)">Sichuan Province (Wenchuan / Aba / Garze)</option>
+                      <option value="Yunnan (China)">Yunnan Province (Zhaotong / Kunming)</option>
+                      <option value="Gansu (China)">Gansu Province (Zhouqu / Longnan)</option>
+                      <option value="Guizhou (China)">Guizhou Province (Bijie / Liupanshui)</option>
+                      <option value="Chongqing (China)">Chongqing / Three Gorges Reservoir</option>
+                      <option value="Shaanxi (China)">Shaanxi / Qinling Mountains</option>
+                      <option value="Tibet / Xizang (China)">Tibet Autonomous Region (Nyingchi / Chamdo)</option>
+                    </optgroup>
+                    <optgroup label="🇱🇰 Sri Lanka & 🇧🇹 Bhutan">
+                      <option value="Ratnapura (Sri Lanka)">Ratnapura District (Sri Lanka)</option>
+                      <option value="Kandy (Sri Lanka)">Kandy District (Central Highlands, Sri Lanka)</option>
+                      <option value="Nuwara Eliya (Sri Lanka)">Nuwara Eliya District (Sri Lanka)</option>
+                      <option value="Badulla (Sri Lanka)">Badulla District (Sri Lanka)</option>
+                      <option value="Kegalle (Sri Lanka)">Kegalle / Aranayake (Sri Lanka)</option>
+                      <option value="Thimphu (Bhutan)">Thimphu District (Bhutan)</option>
+                      <option value="Chukha (Bhutan)">Chukha / Phuentsholing Highway (Bhutan)</option>
+                      <option value="Punakha (Bhutan)">Punakha District (Bhutan)</option>
+                    </optgroup>
+                    <optgroup label="🇵🇰 Pakistan & 🇦🇫 Afghanistan">
+                      <option value="Swat Valley (Pakistan)">Swat Valley (Khyber Pakhtunkhwa, Pakistan)</option>
+                      <option value="Hunza (Pakistan)">Hunza / Attabad Lake Zone (Gilgit-Baltistan)</option>
+                      <option value="Muzaffarabad (Pakistan)">Muzaffarabad (Azad Kashmir, Pakistan)</option>
+                      <option value="Murree (Pakistan)">Murree Hills (Punjab, Pakistan)</option>
+                      <option value="Badakhshan (Afghanistan)">Badakhshan Province (Argo / Pamir, Afghanistan)</option>
+                      <option value="Panjshir (Afghanistan)">Panjshir Valley (Afghanistan)</option>
+                    </optgroup>
+                    <optgroup label="🇹🇼 Taiwan, 🇻🇳 Vietnam, 🇲🇾 Malaysia & 🇹🇭 Thailand">
+                      <option value="Nantou (Taiwan)">Nantou County (Central Ridge, Taiwan)</option>
+                      <option value="Hualien (Taiwan)">Hualien County / Taroko (Taiwan)</option>
+                      <option value="Kaohsiung (Taiwan)">Kaohsiung Mountain District (Taiwan)</option>
+                      <option value="Lao Cai / Sa Pa (Vietnam)">Lào Cai / Sa Pa Highlands (Vietnam)</option>
+                      <option value="Yen Bai (Vietnam)">Yên Bái Province (Vietnam)</option>
+                      <option value="Lam Dong (Vietnam)">Lâm Đồng / Đà Lạt (Vietnam)</option>
+                      <option value="Cameron Highlands (Malaysia)">Cameron Highlands (Pahang, Malaysia)</option>
+                      <option value="Sabah / Mt Kinabalu (Malaysia)">Ranau / Mt. Kinabalu (Sabah, Malaysia)</option>
+                      <option value="Selangor (Malaysia)">Hulu Langat / Batang Kali (Selangor, Malaysia)</option>
+                      <option value="Chiang Mai (Thailand)">Chiang Mai Mountain District (Thailand)</option>
+                      <option value="Phuket (Thailand)">Phuket / Patong Hills (Thailand)</option>
+                    </optgroup>
+
+                    <!-- EUROPE -->
+                    <optgroup label="🇮🇹 Italy">
+                      <option value="Campania / Ischia (Italy)">Campania / Ischia & Amalfi Coast</option>
+                      <option value="Liguria / Cinque Terre (Italy)">Liguria / Genoa & Cinque Terre</option>
+                      <option value="Lombardy / Valtellina (Italy)">Lombardy / Valtellina & Como</option>
+                      <option value="Trentino-Alto Adige (Italy)">Trentino-Alto Adige / Dolomites</option>
+                      <option value="Piedmont (Italy)">Piedmont / Western Alps</option>
+                      <option value="Sicily / Messina (Italy)">Sicily / Messina & Peloritani</option>
+                      <option value="Veneto / Belluno (Italy)">Veneto / Belluno (Vajont Sector)</option>
+                    </optgroup>
+                    <optgroup label="🇨🇭 Switzerland & 🇦🇹 Austria">
+                      <option value="Valais (Switzerland)">Valais Canton / Zermatt & Mattertal</option>
+                      <option value="Bernese Oberland (Switzerland)">Bernese Oberland / Brienz & Grindelwald</option>
+                      <option value="Graubunden (Switzerland)">Graubünden Canton / Brienz-Brinzauls</option>
+                      <option value="Ticino (Switzerland)">Ticino Canton (Southern Alps)</option>
+                      <option value="Tyrol (Austria)">Tyrol / Innsbruck & Ötztal (Austria)</option>
+                      <option value="Salzburg (Austria)">Salzburg Alpine Region (Austria)</option>
+                      <option value="Carinthia (Austria)">Carinthia / Hohe Tauern (Austria)</option>
+                      <option value="Vorarlberg (Austria)">Vorarlberg (Austria)</option>
+                    </optgroup>
+                    <optgroup label="🇫🇷 France & 🇳🇴 Norway">
+                      <option value="Auvergne-Rhone-Alpes (France)">Auvergne-Rhône-Alpes / Chamonix</option>
+                      <option value="Provence-Alpes-Cote d'Azur (France)">Provence-Alpes-Côte d'Azur / Nice Hills</option>
+                      <option value="Hautes-Alpes (France)">Hautes-Alpes / Briançon</option>
+                      <option value="Vestland (Norway)">Vestland / Geiranger & Fjord Slopes (Norway)</option>
+                      <option value="More og Romsdal (Norway)">Møre og Romsdal / Trollstigen (Norway)</option>
+                      <option value="Troms og Finnmark (Norway)">Troms og Finnmark / Coastal Cliffs (Norway)</option>
+                      <option value="Viken / Gjerdrum (Norway)">Viken / Gjerdrum (Quick Clay Zone, Norway)</option>
+                    </optgroup>
+                    <optgroup label="🇬🇧 UK, 🇬🇷 Greece, 🇪🇸 Spain & 🇵🇹 Portugal">
+                      <option value="South Wales Valleys (UK)">South Wales Valleys / Rhondda (UK)</option>
+                      <option value="Dorset / Jurassic Coast (UK)">Dorset / Lyme Regis Coast (UK)</option>
+                      <option value="Scottish Highlands (UK)">Scottish Highlands / Rest and Be Thankful (UK)</option>
+                      <option value="Epirus (Greece)">Epirus / Pindus Mountain Range (Greece)</option>
+                      <option value="Thessaly (Greece)">Thessaly / Meteora & Pelion (Greece)</option>
+                      <option value="Crete (Greece)">Crete Mountain Gorges (Greece)</option>
+                      <option value="Andalusia (Spain)">Andalusia / Sierra Nevada (Spain)</option>
+                      <option value="Pyrenees / Catalonia (Spain)">Catalonia / Pyrenees Slopes (Spain)</option>
+                      <option value="Canary Islands (Spain)">Tenerife / La Palma (Canary Islands, Spain)</option>
+                      <option value="Madeira (Portugal)">Madeira Island Escarpments (Portugal)</option>
+                      <option value="Azores (Portugal)">Azores / São Miguel Volcanic Slopes (Portugal)</option>
+                    </optgroup>
+                    <optgroup label="🇹🇷 Turkey / Turkiye & Caucasus">
+                      <option value="Rize (Turkey)">Rize / Black Sea Mountain Coast (Türkiye)</option>
+                      <option value="Trabzon (Turkey)">Trabzon / Pontic Mountains (Türkiye)</option>
+                      <option value="Artvin (Turkey)">Artvin / Coruh Valley (Türkiye)</option>
+                      <option value="Hatay (Turkey)">Hatay / Antakya Fault Slopes (Türkiye)</option>
+                      <option value="Kahramanmaras (Turkey)">Kahramanmaraş Slopes (Türkiye)</option>
+                      <option value="Adjara (Georgia)">Adjara Autonomous Republic / Batumi Hills (Georgia)</option>
+                      <option value="Svaneti / Racha (Georgia)">Svaneti / Racha Region (Shovi Zone, Georgia)</option>
+                    </optgroup>
+
+                    <!-- NORTH AMERICA -->
+                    <optgroup label="🇺🇸 United States">
+                      <option value="Los Angeles County CA (USA)">Los Angeles County / Hollywood Hills (CA, USA)</option>
+                      <option value="Santa Barbara CA (USA)">Santa Barbara County / Montecito (CA, USA)</option>
+                      <option value="San Mateo & Bay Area CA (USA)">San Mateo / Pacifica / Big Sur Coast (CA, USA)</option>
+                      <option value="Snohomish County WA (USA)">Snohomish County / Oso Landslide Zone (WA, USA)</option>
+                      <option value="King County / Seattle WA (USA)">King County / Seattle Bluff Zone (WA, USA)</option>
+                      <option value="Portland Hills OR (USA)">Portland Hills / Columbia River Gorge (OR, USA)</option>
+                      <option value="Sitka & Juneau AK (USA)">Sitka / Juneau Coastal Slopes (AK, USA)</option>
+                      <option value="Eastern Kentucky (USA)">Eastern Kentucky Appalachian Slopes (KY, USA)</option>
+                      <option value="West Virginia (USA)">Kanawha / Appalachian Corridor (WV, USA)</option>
+                      <option value="Western North Carolina (USA)">Western North Carolina / Blue Ridge (NC, USA)</option>
+                      <option value="Oahu & Maui HI (USA)">Oahu / Nuuanu Pali & Maui Slopes (HI, USA)</option>
+                      <option value="Puerto Rico Cordillera (USA)">Cordillera Central / Utuado (Puerto Rico)</option>
+                    </optgroup>
+                    <optgroup label="🇨🇦 Canada">
+                      <option value="Fraser Valley BC (Canada)">Fraser Canyon / Hope Slide (BC, Canada)</option>
+                      <option value="Vancouver Sea-to-Sky BC (Canada)">Sea-to-Sky Highway / Squamish (BC, Canada)</option>
+                      <option value="Crowsnest Pass AB (Canada)">Crowsnest Pass / Frank Slide (Alberta, Canada)</option>
+                      <option value="Quebec St Lawrence (Canada)">Saint-Jude / Saguenay (Quick Clay, Quebec)</option>
+                    </optgroup>
+                    <optgroup label="🇲🇽 Mexico">
+                      <option value="Oaxaca Sierra (Mexico)">Sierra Norte / Juarez (Oaxaca, Mexico)</option>
+                      <option value="Chiapas Highlands (Mexico)">San Cristóbal / Chiapas Highlands (Mexico)</option>
+                      <option value="Puebla Sierra Norte (Mexico)">Sierra Norte de Puebla (Mexico)</option>
+                      <option value="Veracruz Escarpment (Mexico)">Orizaba / Huatusco Slopes (Veracruz, Mexico)</option>
+                      <option value="Guerrero Mountain (Mexico)">La Montaña Region (Guerrero, Mexico)</option>
+                    </optgroup>
+
+                    <!-- CENTRAL & SOUTH AMERICA -->
+                    <optgroup label="🇨🇴 Colombia">
+                      <option value="Medellin / Antioquia (Colombia)">Medellín / Aburrá Valley (Antioquia, Colombia)</option>
+                      <option value="Mocoa / Putumayo (Colombia)">Mocoa Debris Flow Basin (Putumayo, Colombia)</option>
+                      <option value="Bogota / Cundinamarca (Colombia)">Bogotá Hills / Soacha (Cundinamarca, Colombia)</option>
+                      <option value="Manizales / Caldas (Colombia)">Manizales Coffee Belt (Caldas, Colombia)</option>
+                      <option value="Narino (Colombia)">Pasto / Nariño Cordillera (Colombia)</option>
+                    </optgroup>
+                    <optgroup label="🇧🇷 Brazil">
+                      <option value="Petropolis / Rio de Janeiro (Brazil)">Petrópolis & Nova Friburgo (Serra dos Órgãos, RJ)</option>
+                      <option value="Sao Sebastiao / Sao Paulo (Brazil)">São Sebastião / Serra do Mar (SP, Brazil)</option>
+                      <option value="Minas Gerais Highlands (Brazil)">Belo Horizonte / Ouro Preto (MG, Brazil)</option>
+                      <option value="Salvador Hills (Brazil)">Salvador Metropolitan Encarpments (Bahia, Brazil)</option>
+                      <option value="Blumenau / Santa Catarina (Brazil)">Vale do Itajaí / Blumenau (SC, Brazil)</option>
+                    </optgroup>
+                    <optgroup label="🇵🇪 Peru & 🇧🇴 Bolivia">
+                      <option value="Ancash / Yungay (Peru)">Ancash / Huascarán & Yungay (Peru)</option>
+                      <option value="Cusco / Sacred Valley (Peru)">Cusco / Sacred Valley & Machu Picchu (Peru)</option>
+                      <option value="Lima Coastal Cliffs (Peru)">Lima / Chosica / Rímac Valley (Peru)</option>
+                      <option value="Junin / Chanchamayo (Peru)">Junín / Chanchamayo Cloud Forest (Peru)</option>
+                      <option value="Arequipa Volcano Slopes (Peru)">Arequipa / Misti Flanks (Peru)</option>
+                      <option value="La Paz / Yungas (Bolivia)">La Paz Canyon Slopes & North Yungas (Bolivia)</option>
+                      <option value="Cochabamba (Bolivia)">Cochabamba Tunari Basin (Bolivia)</option>
+                    </optgroup>
+                    <optgroup label="🇨🇱 Chile & 🇪🇨 Ecuador">
+                      <option value="Santiago Cordillera (Chile)">Santiago / Cajón del Maipo (Chile)</option>
+                      <option value="Valparaiso Hills (Chile)">Valparaíso Coastal Hills (Chile)</option>
+                      <option value="Los Lagos / Chaiten (Chile)">Los Lagos / Chaitén & Carretera Austral (Chile)</option>
+                      <option value="Quito / Pichincha (Ecuador)">Quito / Pichincha Volcano Slopes (Ecuador)</option>
+                      <option value="Alausi / Chimborazo (Ecuador)">Alausí Landslide Zone (Chimborazo, Ecuador)</option>
+                      <option value="Azuay / Cuenca (Ecuador)">Azuay / Cuenca Paute Basin (Ecuador)</option>
+                    </optgroup>
+                    <optgroup label="🇬🇹 Guatemala & 🇨🇷 Costa Rica">
+                      <option value="Guatemala City Ravines (Guatemala)">Guatemala City Ravines / El Cambray (Guatemala)</option>
+                      <option value="San Marcos (Guatemala)">San Marcos / Tajumulco (Guatemala)</option>
+                      <option value="Huehuetenango (Guatemala)">Huehuetenango / Cuchumatanes (Guatemala)</option>
+                      <option value="San Jose Escazu (Costa Rica)">San José / Escazú Mountain (Costa Rica)</option>
+                      <option value="Alajuela / Poas (Costa Rica)">Alajuela / Poás Volcano Slopes (Costa Rica)</option>
+                      <option value="Cartago (Costa Rica)">Cartago / Irazú Volcano Sector (Costa Rica)</option>
+                    </optgroup>
+
+                    <!-- AFRICA -->
+                    <optgroup label="🇷🇼 Rwanda & 🇺🇬 Uganda">
+                      <option value="Rubavu / Western Province (Rwanda)">Rubavu / Lake Kivu Basin (Western Province, Rwanda)</option>
+                      <option value="Musanze / Northern Province (Rwanda)">Musanze / Virunga Volcanoes (Northern Province, Rwanda)</option>
+                      <option value="Kigali Hills (Rwanda)">Kigali Slopes & Ravines (Rwanda)</option>
+                      <option value="Bududa / Mount Elgon (Uganda)">Bududa District / Mount Elgon Slopes (Uganda)</option>
+                      <option value="Kasese / Rwenzori (Uganda)">Kasese / Rwenzori Mountains (Uganda)</option>
+                      <option value="Bundibugyo (Uganda)">Bundibugyo District (Uganda)</option>
+                    </optgroup>
+                    <optgroup label="🇰🇪 Kenya & 🇨🇩 DR Congo">
+                      <option value="West Pokot (Kenya)">West Pokot / Cherangani Hills (Kenya)</option>
+                      <option value="Murang'a (Kenya)">Murang'a / Aberdare Ranges (Kenya)</option>
+                      <option value="Elgeyo-Marakwet (Kenya)">Elgeyo Escarpment / Kerio Valley (Kenya)</option>
+                      <option value="Nyeri (Kenya)">Nyeri / Mt. Kenya Slopes (Kenya)</option>
+                      <option value="South Kivu / Kalehe (DR Congo)">Kalehe / Nyamukubi (South Kivu, DR Congo)</option>
+                      <option value="North Kivu / Goma (DR Congo)">North Kivu / Virunga Escarpments (DR Congo)</option>
+                      <option value="Bukavu (DR Congo)">Bukavu Shoreline Slopes (DR Congo)</option>
+                    </optgroup>
+                    <optgroup label="🇪🇹 Ethiopia, 🇿🇦 South Africa & 🇨🇲 Cameroon">
+                      <option value="Gofa Zone (Ethiopia)">Gofa Zone / Kencho Shacha (South Ethiopia)</option>
+                      <option value="Southern Nations (Ethiopia)">Sidama / Wolaita Highlands (Ethiopia)</option>
+                      <option value="Amhara Highlands (Ethiopia)">Simien Mountains / Dessie (Amhara, Ethiopia)</option>
+                      <option value="Durban / KwaZulu-Natal (South Africa)">Durban / eThekwini Slopes (KwaZulu-Natal, South Africa)</option>
+                      <option value="Cape Town / Table Mountain (South Africa)">Cape Peninsula / Chapman's Peak (Western Cape, South Africa)</option>
+                      <option value="Bafoussam / West Region (Cameroon)">Bafoussam / Gouache Escarpment (West Region, Cameroon)</option>
+                      <option value="Freetown / Regent (Sierra Leone)">Sugar Loaf / Regent Peak (Freetown, Sierra Leone)</option>
+                    </optgroup>
+
+                    <!-- OCEANIA -->
+                    <optgroup label="🇳🇿 New Zealand">
+                      <option value="Hawke's Bay (New Zealand)">Hawke's Bay / Esk Valley (New Zealand)</option>
+                      <option value="Gisborne / East Coast (New Zealand)">Gisborne / Tairāwhiti (New Zealand)</option>
+                      <option value="Tasman / Nelson (New Zealand)">Tasman / Nelson Hills (New Zealand)</option>
+                      <option value="Canterbury / Kaikoura (New Zealand)">Canterbury / Kaikōura Ranges (New Zealand)</option>
+                      <option value="Auckland West Coast (New Zealand)">Waitākere Ranges / Piha (Auckland, New Zealand)</option>
+                      <option value="Queenstown-Lakes (New Zealand)">Queenstown-Lakes / Remarkables (New Zealand)</option>
+                    </optgroup>
+                    <optgroup label="🇵🇬 Papua New Guinea & 🇦🇺 Australia">
+                      <option value="Enga Province (Papua New Guinea)">Enga Province / Maip Mulitaka (Papua New Guinea)</option>
+                      <option value="Southern Highlands (Papua New Guinea)">Southern Highlands Province (Papua New Guinea)</option>
+                      <option value="Morobe Province (Papua New Guinea)">Morobe / Markham Valley (Papua New Guinea)</option>
+                      <option value="Wollongong / Illawarra (Australia)">Illawarra Escarpment / Wollongong (NSW, Australia)</option>
+                      <option value="Dandenong Ranges (Australia)">Dandenong Ranges (VIC, Australia)</option>
+                      <option value="Gold Coast Hinterland (Australia)">Tamborine Mountain / Springbrook (QLD, Australia)</option>
+                      <option value="Blue Mountains (Australia)">Blue Mountains Escarpments (NSW, Australia)</option>
+                    </optgroup>
+
+                    <!-- MIDDLE EAST & CENTRAL ASIA -->
+                    <optgroup label="🇮🇷 Iran, 🇹🇯 Tajikistan & 🇰🇬 Kyrgyzstan">
+                      <option value="Mazandaran (Iran)">Mazandaran / Alborz Mountains (Iran)</option>
+                      <option value="Gilan (Iran)">Gilan / Caspian Slopes (Iran)</option>
+                      <option value="Lorestan (Iran)">Lorestan / Zagros Mountains (Iran)</option>
+                      <option value="Gorno-Badakhshan (Tajikistan)">Gorno-Badakhshan / Pamir Highway (Tajikistan)</option>
+                      <option value="Khatlon (Tajikistan)">Khatlon / Yavan Slopes (Tajikistan)</option>
+                      <option value="Osh / Jalal-Abad (Kyrgyzstan)">Osh / Jalal-Abad / Fergana Range (Kyrgyzstan)</option>
+                      <option value="Asir / Abha (Saudi Arabia)">Asir Mountains / Abha Escarpment (Saudi Arabia)</option>
+                      <option value="Ibb / Taiz (Yemen)">Ibb & Taiz Mountain Terraces (Yemen)</option>
+                    </optgroup>
                   </select>
                 </div>
                 <div>
@@ -946,35 +1430,103 @@
         </section>
 
         <!-- ================================================================== -->
-        <!-- VIEW 11: ADMIN & GEE DATA HEALTH -->
+        <!-- VIEW 12: LANDSLIDE AI ASSISTANT -->
         <!-- ================================================================== -->
-        <section id="view-admin" class="view-section" style="display: none;">
-          <div class="page-title-banner">
-            <div>
-              <h2>System Health & Data Ingestion Pipelines</h2>
-              <p>Operational status of Google Earth Engine, IMD weather feeds, NASA SMAP, and AI inference engines.</p>
-            </div>
-            <div class="page-actions">
-              <button class="btn btn-secondary btn-sm" onclick="LandslideApp.showToast('All APIs re-pinged: 100% Operational', 'success')">
-                Ping All Services
-              </button>
-            </div>
-          </div>
+        <section id="view-chatbot" class="view-section" style="display: none;">
+          <div class="chatbot-page-wrapper">
+            
+            <!-- Left Info Panel -->
+            <aside class="chatbot-sidebar-card">
+              <div class="chatbot-meta-block">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                  <div class="chat-avatar-icon" style="width: 36px; height: 36px; font-size: 1.1rem;">🤖</div>
+                  <div>
+                    <h3 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin: 0;">Landslide AI</h3>
+                    <div style="font-size: 0.725rem; color: #64748b;">v2.4 Geospatial NLP</div>
+                  </div>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.45;">
+                  Ask questions in natural language and receive grounded insights synthesized directly from Google Earth Engine, IMD radar telemetry, and multi-factor hazard scoring models.
+                </p>
+              </div>
 
-          <div class="grid-cols-3" id="admin-datasources-grid" style="margin-bottom: 1.5rem;"></div>
+              <div class="chatbot-meta-block">
+                <div class="chatbot-meta-title">Language Selection</div>
+                <select class="role-select chatbot-lang-select" style="width: 100%;" onchange="LandslideAIChatbot.setLanguage(this.value)">
+                  <option value="en">English (US/IN)</option>
+                  <option value="ta">தமிழ் (Tamil)</option>
+                </select>
+              </div>
 
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">⚙️ Google Earth Engine & API Connection Architecture</h3>
+              <div class="chatbot-meta-block">
+                <div class="chatbot-meta-title">Available Data Feeds</div>
+                <ul style="font-size: 0.775rem; color: #475569; list-style: none; display: flex; flex-direction: column; gap: 6px;">
+                  <li>🛰️ <b>Sentinel-1 InSAR:</b> Active</li>
+                  <li>🌧️ <b>IMD Doppler Telemetry:</b> 24h & 7d</li>
+                  <li>💧 <b>SMAP Soil Saturation:</b> Active</li>
+                  <li>⛰️ <b>SRTM 30m Slope DEM:</b> Calibrated</li>
+                  <li>🚨 <b>Active Warnings:</b> Synced</li>
+                </ul>
+              </div>
+
+              <div class="chatbot-meta-block">
+                <div class="chatbot-meta-title">Quick Actions</div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <button class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center;" onclick="LandslideAIChatbot.clearChat()">
+                    🔄 New / Clear Chat
+                  </button>
+                  <button class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center;" onclick="LandslideApp.navigateTo('map')">
+                    🗺️ Open Risk Map
+                  </button>
+                </div>
+              </div>
+            </aside>
+
+            <!-- Main Chat Workspace -->
+            <div class="chatbot-main-container">
+              <!-- Chat Header -->
+              <div class="chat-header">
+                <div class="chat-header-info">
+                  <div class="chat-avatar-icon">🤖</div>
+                  <div class="chat-title-group">
+                    <h2>Landslide AI Assistant</h2>
+                    <p>AI-powered landslide information assistant • Ask me about landslide risk, environmental conditions, alerts and safety</p>
+                  </div>
+                </div>
+
+                <div class="chat-header-actions">
+                  <div class="online-status-badge">
+                    <div class="online-status-dot"></div>
+                    <span>Online</span>
+                  </div>
+                  <select class="role-select chatbot-lang-select" style="padding: 3px 8px; font-size: 0.75rem;" onchange="LandslideAIChatbot.setLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="ta">தமிழ்</option>
+                  </select>
+                  <button class="btn btn-secondary btn-sm" onclick="LandslideAIChatbot.clearChat()" title="Clear conversation" style="font-size: 0.75rem; padding: 4px 8px;">
+                    🗑️ Clear
+                  </button>
+                </div>
+              </div>
+
+              <!-- Message Stream Canvas -->
+              <div class="chat-messages-area" id="chatbot-messages-container"></div>
+
+              <!-- Input Area -->
+              <div class="chat-input-wrapper">
+                <form class="chat-input-form" id="chatbot-main-form">
+                  <input type="text" id="chat-input-text" class="chat-text-input" placeholder="Ask about landslide risk, rainfall, soil moisture, alerts..." autocomplete="off">
+                  <button type="button" class="chat-mic-btn" onclick="LandslideAIChatbot.toggleVoiceInput()" title="Click to speak (Voice Recognition)">
+                    🎙️
+                  </button>
+                  <button type="submit" class="chat-send-btn">
+                    <span>Send</span>
+                    <span>➤</span>
+                  </button>
+                </form>
+              </div>
             </div>
-            <div style="font-size: 0.825rem; color: #334155; line-height: 1.6;">
-              <p style="margin-bottom: 0.5rem;">
-                <b>Security Architecture:</b> The system utilizes a secure backend proxy layer (FastAPI / Node.js) with environment variable isolation (<code>.env.example</code>). No Google Earth Engine private keys or AWS credentials are exposed to frontend client bundles.
-              </p>
-              <p>
-                <b>Data Failover:</b> If satellite connectivity encounters latency, the AI scoring engine seamlessly transitions to local in-situ sensor telemetry and historical hazard priors.
-              </p>
-            </div>
+
           </div>
         </section>
 
@@ -990,13 +1542,13 @@
       <span class="b-icon">📊</span>
       <span>Dashboard</span>
     </a>
+    <a href="#chatbot" class="bottom-nav-btn" data-bview="chatbot">
+      <span class="b-icon">🤖</span>
+      <span>AI Chat</span>
+    </a>
     <a href="#map" class="bottom-nav-btn" data-bview="map">
       <span class="b-icon">🗺️</span>
       <span>Risk Map</span>
-    </a>
-    <a href="#analysis" class="bottom-nav-btn" data-bview="analysis">
-      <span class="b-icon">🔍</span>
-      <span>Analysis</span>
     </a>
     <a href="#alerts" class="bottom-nav-btn" data-bview="alerts">
       <span class="b-icon">⚠️</span>
@@ -1007,6 +1559,47 @@
       <span>Menu</span>
     </button>
   </nav>
+
+  <!-- ====================================================================== -->
+  <!-- GLOBAL FLOATING CHATBOT LAUNCHER & DRAWER -->
+  <!-- ====================================================================== -->
+  <button class="floating-chatbot-trigger" id="floating-chatbot-btn" onclick="LandslideAIChatbot.toggleFloatingDrawer()" aria-label="Open Landslide AI Assistant">
+    <span class="floating-trigger-icon">🤖</span>
+    <span class="floating-text">Ask Landslide AI</span>
+  </button>
+
+  <div class="floating-chat-drawer" id="floating-chat-drawer">
+    <div class="floating-chat-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="chat-avatar-icon" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 8px;">🤖</div>
+        <div>
+          <div style="font-size: 0.875rem; font-weight: 800; color: #0f172a; line-height: 1.1;">Landslide AI Assistant</div>
+          <div style="font-size: 0.7rem; color: #10b981; font-weight: 600;">● Online • Live Telemetry</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <button onclick="LandslideApp.navigateTo('chatbot'); LandslideAIChatbot.closeFloatingDrawer();" style="background:none; border:none; font-size:0.9rem; cursor:pointer; padding:4px;" title="Expand to full page">⛶</button>
+        <button onclick="LandslideAIChatbot.clearChat()" style="background:none; border:none; font-size:0.9rem; cursor:pointer; padding:4px;" title="Clear chat">🗑️</button>
+        <button onclick="LandslideAIChatbot.closeFloatingDrawer()" style="background:none; border:none; font-size:1.1rem; cursor:pointer; padding:4px;" title="Close">✕</button>
+      </div>
+    </div>
+
+    <!-- Floating Chat Messages Area -->
+    <div class="chat-messages-area" id="floating-messages-container" style="flex: 1; padding: 0.85rem;"></div>
+
+    <!-- Floating Chat Input -->
+    <div class="chat-input-wrapper" style="padding: 0.65rem 0.85rem;">
+      <form class="chat-input-form" id="floating-chat-form">
+        <input type="text" id="floating-chat-input-text" class="chat-text-input" placeholder="Ask about landslide risk..." autocomplete="off" style="font-size:0.825rem;">
+        <button type="button" class="chat-mic-btn" onclick="LandslideAIChatbot.toggleVoiceInput()" style="width:30px; height:30px; font-size:0.9rem;" title="Voice Input">
+          🎙️
+        </button>
+        <button type="submit" class="chat-send-btn" style="padding: 0.35rem 0.75rem; font-size:0.775rem;">
+          <span>➤</span>
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- ====================================================================== -->
   <!-- MODAL: BROADCAST ALERT SIMULATOR -->
@@ -1052,6 +1645,8 @@
   <script src="js/citizen-reports.js"></script>
   <script src="js/alerts.js"></script>
   <script src="js/export-utils.js"></script>
+  <script src="js/chatbot.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
+

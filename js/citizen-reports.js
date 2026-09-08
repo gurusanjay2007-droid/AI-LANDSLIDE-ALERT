@@ -31,6 +31,115 @@ const CitizenReporting = {
         this.handlePhotoPreview(e);
       });
     }
+
+    const districtSelect = document.getElementById("citizen-district-select") || form.elements["district"];
+    if (districtSelect) {
+      districtSelect.addEventListener("change", (e) => {
+        this.updateCoordinatesForDistrict(e.target.value);
+      });
+    }
+  },
+
+  updateCoordinatesForDistrict(district) {
+    const latInput = document.getElementById("report-latitude");
+    const lngInput = document.getElementById("report-longitude");
+    const statusText = document.getElementById("gps-status-indicator");
+    if (!latInput || !lngInput) return;
+
+    // Preset lookup table for global and domestic districts
+    const globalCoords = {
+      "Nilgiris": [11.3912, 76.7112],
+      "Wayanad": [11.5432, 76.1245],
+      "Idukki": [9.8512, 77.0125],
+      "Chamoli": [30.4125, 79.3312],
+      "Shimla": [31.1048, 77.1734],
+      "Rudraprayag": [30.2844, 78.9811],
+      "Uttarkashi": [30.7268, 78.4354],
+      "Darjeeling": [27.0360, 88.2627],
+      "Kalimpong": [27.0594, 88.4695],
+      "Gangtok": [27.3389, 88.6065],
+      "Mangan": [27.5042, 88.5284],
+      "Kodagu": [12.4244, 75.7382],
+      "Chikkamagaluru": [13.3161, 75.7720],
+      "Raigad": [18.5158, 73.1812],
+      "Ratnagiri": [16.9902, 73.3120],
+      "Pune": [18.5204, 73.8567],
+      "Kathmandu (Nepal)": [27.7172, 85.3240],
+      "Pokhara / Kaski (Nepal)": [28.2096, 83.9856],
+      "Sindhupalchok (Nepal)": [27.9542, 85.6942],
+      "Solukhumbu (Nepal)": [27.7025, 86.7128],
+      "Nagano (Japan)": [36.6513, 138.1810],
+      "Shizuoka (Japan)": [34.9756, 138.3828],
+      "Hiroshima (Japan)": [34.3853, 132.4553],
+      "Kumamoto (Japan)": [32.8031, 130.7079],
+      "Cianjur / West Java (Indonesia)": [-6.8227, 107.1394],
+      "Banjarnegara / Central Java (Indonesia)": [-7.3987, 109.6974],
+      "Benguet (Philippines)": [16.4674, 120.6869],
+      "Southern Leyte (Philippines)": [10.3396, 124.9818],
+      "Sichuan (China)": [30.6586, 104.0648],
+      "Yunnan (China)": [25.0453, 102.7097],
+      "Ratnapura (Sri Lanka)": [6.6828, 80.4034],
+      "Kandy (Sri Lanka)": [7.2906, 80.6337],
+      "Swat Valley (Pakistan)": [35.2227, 72.4258],
+      "Hunza (Pakistan)": [36.3167, 74.6500],
+      "Nantou (Taiwan)": [23.9609, 120.9719],
+      "Lao Cai / Sa Pa (Vietnam)": [22.3364, 103.8438],
+      "Cameron Highlands (Malaysia)": [4.4721, 101.3806],
+      "Valais (Switzerland)": [46.1905, 7.5449],
+      "Bernese Oberland (Switzerland)": [46.6863, 7.8632],
+      "Campania / Ischia (Italy)": [40.7303, 13.8967],
+      "Liguria / Cinque Terre (Italy)": [44.1461, 9.6439],
+      "Tyrol (Austria)": [47.2692, 11.4041],
+      "Auvergne-Rhone-Alpes (France)": [45.9237, 6.8694],
+      "Vestland (Norway)": [60.3913, 5.3221],
+      "Rize (Turkey)": [41.0201, 40.5234],
+      "Los Angeles County CA (USA)": [34.0522, -118.2437],
+      "Santa Barbara CA (USA)": [34.4208, -119.6982],
+      "Snohomish County WA (USA)": [48.0330, -121.9213],
+      "Fraser Valley BC (Canada)": [49.2000, -121.7667],
+      "Oaxaca Sierra (Mexico)": [17.0732, -96.7266],
+      "Medellin / Antioquia (Colombia)": [6.2442, -75.5812],
+      "Mocoa / Putumayo (Colombia)": [1.1495, -76.6465],
+      "Petropolis / Rio de Janeiro (Brazil)": [-22.5050, -43.1789],
+      "Sao Sebastiao / Sao Paulo (Brazil)": [-23.7600, -45.4097],
+      "Ancash / Yungay (Peru)": [-9.1394, -77.7444],
+      "Cusco / Sacred Valley (Peru)": [-13.5319, -71.9675],
+      "Santiago Cordillera (Chile)": [-33.4489, -70.6693],
+      "Quito / Pichincha (Ecuador)": [-0.1807, -78.4678],
+      "Rubavu / Western Province (Rwanda)": [-1.6763, 29.2603],
+      "Bududa / Mount Elgon (Uganda)": [1.0094, 34.3315],
+      "West Pokot (Kenya)": [1.2333, 35.1167],
+      "South Kivu / Kalehe (DR Congo)": [-2.0833, 28.9000],
+      "Gofa Zone (Ethiopia)": [6.3333, 36.8333],
+      "Durban / KwaZulu-Natal (South Africa)": [-29.8587, 31.0218],
+      "Freetown / Regent (Sierra Leone)": [8.4412, -13.2081],
+      "Hawke's Bay (New Zealand)": [-39.5109, 176.8488],
+      "Enga Province (Papua New Guinea)": [-5.4833, 143.5167],
+      "Wollongong / Illawarra (Australia)": [-34.4278, 150.8931],
+      "Mazandaran (Iran)": [36.5659, 53.0586],
+      "Gorno-Badakhshan (Tajikistan)": [38.4167, 72.8333]
+    };
+
+    if (globalCoords[district]) {
+      const [lat, lng] = globalCoords[district];
+      latInput.value = lat.toFixed(4);
+      lngInput.value = lng.toFixed(4);
+      if (statusText) statusText.textContent = `📍 Centered on ${district} (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+      return;
+    }
+
+    // Check if matched in preset locations
+    const matchedLoc = (typeof LANDSLIDE_APP_DATA !== "undefined" && LANDSLIDE_APP_DATA.locations)
+      ? LANDSLIDE_APP_DATA.locations.find(l => l.district.toLowerCase() === district.toLowerCase())
+      : null;
+
+    if (matchedLoc) {
+      latInput.value = matchedLoc.lat.toFixed(4);
+      lngInput.value = matchedLoc.lng.toFixed(4);
+      if (statusText) statusText.textContent = `📍 Centered on ${district} (${matchedLoc.name})`;
+    } else {
+      if (statusText) statusText.textContent = `📍 District: ${district}`;
+    }
   },
 
   fetchCurrentGPS() {

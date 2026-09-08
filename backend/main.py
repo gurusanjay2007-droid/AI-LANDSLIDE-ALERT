@@ -9,8 +9,15 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import json
+import sys
+import os
+
+# Ensure backend root is on sys.path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from ml_model import model_service, classify_risk
+from services.ai.chat_service import chat_service
+
 
 app = FastAPI(
     title="Landslide Early Warning & Risk Monitoring API",
@@ -182,8 +189,47 @@ MOCK_LOCATIONS = [
         "temperature_c": 14.0,
         "humidity_pct": 72,
         "last_updated": "20 minutes ago"
+    },
+    {
+        "id": "LOC-09",
+        "name": "Darjeeling Tea Slopes (Paglajhora)",
+        "village": "Kurseong Sector",
+        "district": "Darjeeling",
+        "state": "West Bengal",
+        "latitude": 26.8812,
+        "longitude": 88.2774,
+        "elevation_m": 1450,
+        "slope_degrees": 37.0,
+        "soil_type": "Mica-rich Mountain Colluvium",
+        "vegetation_ndvi": 0.62,
+        "historical_incidents": 28,
+        "rainfall_24h_mm": 178.0,
+        "soil_moisture_pct": 89.2,
+        "temperature_c": 15.6,
+        "humidity_pct": 95,
+        "last_updated": "4 mins ago"
+    },
+    {
+        "id": "LOC-10",
+        "name": "Shimla Central Ridge (Jakhoo Corridor)",
+        "village": "Jakhoo Hill",
+        "district": "Shimla",
+        "state": "Himachal Pradesh",
+        "latitude": 31.1008,
+        "longitude": 77.1845,
+        "elevation_m": 2455,
+        "slope_degrees": 27.0,
+        "soil_type": "Weathered Schist & Silt Loam",
+        "vegetation_ndvi": 0.68,
+        "historical_incidents": 7,
+        "rainfall_24h_mm": 52.0,
+        "soil_moisture_pct": 51.0,
+        "temperature_c": 13.5,
+        "humidity_pct": 70,
+        "last_updated": "6 mins ago"
     }
 ]
+
 
 # Initial in-memory alerts
 MOCK_ALERTS = [
@@ -321,6 +367,19 @@ class AlertCreate(BaseModel):
     headline: str
     trigger_reason: str
     recommended_action: str
+
+class ChatLocationInput(BaseModel):
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    name: Optional[str] = None
+    id: Optional[str] = None
+
+class ChatRequest(BaseModel):
+    message: str
+    location: Optional[ChatLocationInput] = None
+    conversationId: Optional[str] = None
+    language: Optional[str] = "en"
+
 
 
 # ------------------------------------------------------------------------------
@@ -506,3 +565,116 @@ def get_historical_landslide_data():
             {"district": "Shimla (HP)", "count": 12}
         ]
     }
+
+@app.get("/api/environment")
+def get_environmental_telemetry():
+    """Returns aggregated environmental sensor and satellite telemetry."""
+    return {
+        "timestamp": datetime.now().isoformat(),
+        "total_monitored_stations": len(MOCK_LOCATIONS),
+        "data_sources": ["IMD Doppler Radar", "Sentinel-1 InSAR", "SMAP Soil Moisture", "SRTM 30m DEM"],
+        "telemetry": [
+            {
+                "location_id": loc["id"],
+                "name": loc["name"],
+                "district": loc["district"],
+                "rainfall_24h_mm": loc["rainfall_24h_mm"],
+                "soil_moisture_pct": loc["soil_moisture_pct"],
+                "temperature_c": loc["temperature_c"],
+                "humidity_pct": loc["humidity_pct"],
+                "slope_degrees": loc["slope_degrees"],
+                "elevation_m": loc["elevation_m"],
+                "last_updated": loc["last_updated"]
+            }
+            for loc in MOCK_LOCATIONS
+        ]
+    }
+
+@app.get("/api/rainfall")
+def get_rainfall_summary():
+    """Returns real-time rainfall observations across all monitored sectors."""
+    readings = [
+        {
+            "location_id": loc["id"],
+            "location_name": loc["name"],
+            "rainfall_24h_mm": loc["rainfall_24h_mm"],
+            "status": "EXTREME" if loc["rainfall_24h_mm"] > 150 else "HEAVY" if loc["rainfall_24h_mm"] > 80 else "MODERATE"
+        }
+        for loc in MOCK_LOCATIONS
+    ]
+    avg_rainfall = round(sum(r["rainfall_24h_mm"] for r in readings) / len(readings), 1) if readings else 0
+    return {
+        "timestamp": datetime.now().isoformat(),
+        "average_24h_rainfall_mm": avg_rainfall,
+        "readings": readings
+    }
+
+@app.get("/api/soil-moisture")
+def get_soil_moisture_summary():
+    """Returns real-time soil moisture saturation telemetry."""
+    readings = [
+        {
+            "location_id": loc["id"],
+            "location_name": loc["name"],
+            "soil_moisture_pct": loc["soil_moisture_pct"],
+            "soil_type": loc["soil_type"],
+            "status": "CRITICAL" if loc["soil_moisture_pct"] > 80 else "ELEVATED" if loc["soil_moisture_pct"] > 60 else "STABLE"
+        }
+        for loc in MOCK_LOCATIONS
+    ]
+    avg_moisture = round(sum(r["soil_moisture_pct"] for r in readings) / len(readings), 1) if readings else 0
+    return {
+        "timestamp": datetime.now().isoformat(),
+        "average_soil_moisture_pct": avg_moisture,
+        "readings": readings
+    }
+
+@app.get("/api/landslides")
+def get_landslides_inventory():
+    """Alias for historical and active landslide incidents."""
+    return get_historical_landslide_data()
+
+@app.post("/api/chat")
+def handle_chat_message(req: ChatRequest):
+    """
+    Landslide AI Assistant Chat Endpoint.
+    Integrates intent recognition, system telemetry, alert checking,
+    and bilingual safety reasoning.
+    """
+    try:
+        coords = None
+        target_loc_id = "LOC-02"
+        if req.location:
+            if req.location.latitude is not None and req.location.longitude is not None:
+                coords = {"latitude": req.location.latitude, "longitude": req.location.longitude}
+            if req.location.id:
+                target_loc_id = req.location.id
+
+        response = chat_service.process_chat(
+            message=req.message,
+            locations=MOCK_LOCATIONS,
+            alerts=MOCK_ALERTS,
+            reports=MOCK_REPORTS,
+            current_location_id=target_loc_id,
+            conversation_id=req.conversationId,
+            language=req.language or "en",
+            coordinates=coords
+        )
+        return response
+    except Exception as e:
+        return {
+            "message": "I'm currently unable to connect to the AI service. Please try again or use the Live Risk Map and Dashboard to view the latest available information.",
+            "intent": "ERROR",
+            "risk": None,
+            "location": None,
+            "sources": ["System Fallback"],
+            "actionButtons": [
+                {"label": "📊 Open Dashboard", "action": "VIEW_DASHBOARD"},
+                {"label": "🗺️ Open Risk Map", "action": "VIEW_MAP"}
+            ],
+            "suggestedQuestions": ["What is the current risk?", "Show high-risk areas"],
+            "explanationCard": None,
+            "isDemoMode": True,
+            "error_detail": str(e)
+        }
+

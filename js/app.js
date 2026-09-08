@@ -32,6 +32,7 @@ const LandslideApp = {
     const validViews = [
       "landing",
       "dashboard",
+      "chatbot",
       "map",
       "analysis",
       "environment",
@@ -43,6 +44,7 @@ const LandslideApp = {
       "workflow",
       "admin"
     ];
+
 
     if (!validViews.includes(viewName)) {
       viewName = "dashboard";
@@ -129,7 +131,11 @@ const LandslideApp = {
 
   selectLocation(locationId) {
     this.currentLocationId = locationId;
+    if (typeof LandslideAIChatbot !== "undefined") {
+      LandslideAIChatbot.contextLocationId = locationId;
+    }
     const loc = this.getSelectedLocation();
+
 
     // Update header context text
     const headerLocText = document.getElementById("header-location-name");
@@ -431,6 +437,30 @@ const LandslideApp = {
     const resultsBox = document.getElementById("search-results-dropdown");
     if (!searchInput || !resultsBox) return;
 
+    const handleGlobalSearch = (queryText) => {
+      const q = (queryText || searchInput.value).trim();
+      if (!q) return;
+      resultsBox.style.display = "none";
+      
+      // Navigate to Map and execute search
+      this.navigateTo('map');
+      setTimeout(() => {
+        if (typeof LandslideMap !== "undefined" && LandslideMap.searchLocation) {
+          const mapInput = document.getElementById("map-search-input");
+          if (mapInput) mapInput.value = q;
+          LandslideMap.searchLocation(q);
+        }
+      }, 150);
+    };
+
+    // Trigger search on Enter key press
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleGlobalSearch();
+      }
+    });
+
     searchInput.addEventListener("input", (e) => {
       const query = e.target.value.toLowerCase().trim();
       if (!query) {
@@ -445,16 +475,29 @@ const LandslideApp = {
         l.state.toLowerCase().includes(query)
       );
 
-      if (matches.length === 0) {
-        resultsBox.innerHTML = `<div style="padding: 10px; font-size: 0.8rem; color: #64748b;">No matching monitored zones</div>`;
-      } else {
-        resultsBox.innerHTML = matches.map(m => `
-          <div style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer;" onclick="LandslideApp.selectLocation('${m.id}'); LandslideApp.navigateTo('analysis'); document.getElementById('search-results-dropdown').style.display='none';">
-            <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">${m.name}</div>
+      let html = "";
+
+      if (matches.length > 0) {
+        html += matches.map(m => `
+          <div style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'" onclick="LandslideApp.selectLocation('${m.id}'); LandslideApp.navigateTo('analysis'); document.getElementById('search-results-dropdown').style.display='none';">
+            <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">📍 ${m.name}</div>
             <div style="font-size: 0.75rem; color: #64748b;">${m.village}, ${m.district} • <span class="risk-badge ${m.risk_category}" style="font-size:0.65rem; padding: 1px 4px;">${m.risk_category}</span></div>
           </div>
         `).join("");
       }
+
+      // Always show global map search option for any location worldwide
+      html += `
+        <div style="padding: 10px 12px; background: #eff6ff; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #dbeafe;" onclick="LandslideApp.navigateTo('map'); setTimeout(() => { LandslideMap.searchLocation('${query.replace(/'/g, "\\'")}'); }, 150); document.getElementById('search-results-dropdown').style.display='none';">
+          <div>
+            <div style="font-weight: 700; font-size: 0.825rem; color: #1e40af;">🔍 Search "${query}" on Global Map</div>
+            <div style="font-size: 0.725rem; color: #3b82f6;">Fly to location with GIS Satellite telemetry</div>
+          </div>
+          <span style="font-size: 0.8rem; font-weight: 700; color: #1e40af;">Go →</span>
+        </div>
+      `;
+
+      resultsBox.innerHTML = html;
       resultsBox.style.display = "block";
     });
 
