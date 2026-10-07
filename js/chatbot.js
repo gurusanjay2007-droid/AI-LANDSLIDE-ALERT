@@ -5,7 +5,8 @@
  */
 
 const LandslideAIChatbot = {
-  activeLanguage: "en", // "en" or "ta"
+  // Active Language (persisted in localStorage)
+  activeLanguage: localStorage.getItem("landslide_chat_language") || "en",
   conversationId: null,
   contextLocationId: "LOC-02", // Default to active sector
   isVoiceActive: false,
@@ -20,7 +21,88 @@ const LandslideAIChatbot = {
   geminiModel: localStorage.getItem("landslide_gemini_model") || "gemini-1.5-flash",
   openaiModel: localStorage.getItem("landslide_openai_model") || "gpt-4o-mini",
 
-  // Pre-configured Quick Questions
+  // 22 Eighth Schedule Indian Languages + English Metadata
+  indianLanguages: {
+    en: { name: "English", nativeName: "English (India)", speechCode: "en-IN" },
+    hi: { name: "Hindi", nativeName: "हिन्दी (Hindi)", speechCode: "hi-IN" },
+    ta: { name: "Tamil", nativeName: "தமிழ் (Tamil)", speechCode: "ta-IN" },
+    te: { name: "Telugu", nativeName: "తెలుగు (Telugu)", speechCode: "te-IN" },
+    kn: { name: "Kannada", nativeName: "ಕನ್ನಡ (Kannada)", speechCode: "kn-IN" },
+    ml: { name: "Malayalam", nativeName: "മലയാളം (Malayalam)", speechCode: "ml-IN" },
+    bn: { name: "Bengali", nativeName: "বাংলা (Bengali)", speechCode: "bn-IN" },
+    mr: { name: "Marathi", nativeName: "मराठी (Marathi)", speechCode: "mr-IN" },
+    gu: { name: "Gujarati", nativeName: "ગુજરાતી (Gujarati)", speechCode: "gu-IN" },
+    pa: { name: "Punjabi", nativeName: "ਪੰਜਾਬੀ (Punjabi)", speechCode: "pa-IN" },
+    or: { name: "Odia", nativeName: "ଓଡ଼ିଆ (Odia)", speechCode: "or-IN" },
+    as: { name: "Assamese", nativeName: "অসমীয়া (Assamese)", speechCode: "as-IN" },
+    ur: { name: "Urdu", nativeName: "اردو (Urdu)", speechCode: "ur-IN" },
+    ne: { name: "Nepali", nativeName: "नेपाली (Nepali)", speechCode: "ne-NP" },
+    kok: { name: "Konkani", nativeName: "कोंकणी (Konkani)", speechCode: "kok-IN" },
+    ks: { name: "Kashmiri", nativeName: "كٲشُر (Kashmiri)", speechCode: "ks-IN" },
+    doi: { name: "Dogri", nativeName: "डोगरी (Dogri)", speechCode: "doi-IN" },
+    sa: { name: "Sanskrit", nativeName: "संस्कृतम् (Sanskrit)", speechCode: "sa-IN" },
+    mai: { name: "Maithili", nativeName: "मैथिली (Maithili)", speechCode: "mai-IN" },
+    mni: { name: "Manipuri", nativeName: "মৈতৈলোন্ (Manipuri)", speechCode: "mni-IN" },
+    sat: { name: "Santali", nativeName: "ᱥᱟᱱᱛᱟᱲᱤ (Santali)", speechCode: "sat-IN" },
+    brx: { name: "Bodo", nativeName: "बड़ो (Bodo)", speechCode: "brx-IN" },
+    sd: { name: "Sindhi", nativeName: "سنڌي (Sindhi)", speechCode: "sd-IN" }
+  },
+
+  // Native Greetings in All Supported Indian Languages
+  welcomeMessages: {
+    en: "Hello! I'm **Landslide AI Assistant**.\n\nI can help you understand landslide risks, environmental conditions, alerts, locations and recommended safety actions.\n\nWhat would you like to know?",
+    hi: "नमस्ते! मैं **Landslide AI Assistant** हूँ।\n\nमैं भूस्खलन के खतरे, बारिश, मिट्टी की नमी, मौसम के पूर्वानुमान, चेतावनी और सुरक्षा उपायों के बारे में आपकी सहायता कर सकता हूँ।\n\nआप क्या जानना चाहते हैं?",
+    ta: "வணக்கம்! நான் **Landslide AI Assistant**.\n\nநிலச்சரிவு அபாயங்கள், மழைப்பொழிவு, மண் ஈரப்பதம், பேரிடர் எச்சரிக்கைகள் மற்றும் பாதுகாப்பு வழிமுறைகள் குறித்து உங்களுக்கு உதவ முடியும்.\n\nநீங்கள் என்ன தெரிந்து கொள்ள விரும்புகிறீர்கள்?",
+    te: "నమస్కారం! నేను **Landslide AI Assistant**.\n\nకొండచరియలు విరిగిపడే ప్రమాదం, వర్షపాతం, నేల తేమ, వాతావరణ నివేదికలు, హెచ్చరికలు మరియు భద్రతా చర్యల గురించి మీకు సహాయం చేయగలను.\n\nమీరు ఏమి తెలుసుకోవాలనుకుంటున్నారు?",
+    kn: "ನಮಸ್ಕಾರ! ನಾನು **Landslide AI Assistant**.\n\nಭೂಕುಸಿತದ ಅಪಾಯ, ಮಳೆ ಪ್ರಮಾಣ, ಮಣ್ಣಿನ ತೇವಾಂಶ, ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ, ಎಚ್ಚರಿಕೆಗಳು ಮತ್ತು ಸುರಕ್ಷತಾ ಕ್ರಮಗಳ ಬಗ್ಗೆ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಬಲ್ಲೆ.\n\nನೀವು ಏನನ್ನು ತಿಳಿಯಲು ಬಯಸುತ್ತೀರಿ?",
+    ml: "നമസ്കാരം! ഞാൻ **Landslide AI Assistant**.\n\nഉരുൾപൊട്ടൽ സാധ്യത, മഴയുടെ അളവ്, മണ്ണിലെ ഈർപ്പം, കാലാവസ്ഥാ റിപ്പോർട്ടുകൾ, അടിയന്തര മുന്നറിയിപ്പുകൾ, സുരക്ഷാ മുൻകരുതലുകൾ എന്നിവയെക്കുറിച്ച് നിങ്ങൾക്ക് വിവരങ്ങൾ നൽകാൻ എനിക്ക് കഴിയും.\n\nനിങ്ങൾക്ക് എന്താണ് അറിയേണ്ടത്?",
+    bn: "নমস্কার! আমি **Landslide AI Assistant**।\n\nভূমিধসের ঝুঁকি, বৃষ্টিপাত, মাটির আর্দ্রতা, আবহাওয়া সতর্কতা এবং জীবনরক্ষাকারী সুরক্ষা ব্যবস্থা সম্পর্কে সাহায্য করতে পারি।\n\nআপনি কী জানতে চান?",
+    mr: "नमस्कार! मी **Landslide AI Assistant** आहे।\n\nदरड कोसळण्याचा धोका, पर्जन्यमान, मातीचा ओलावा, हवामानाचा अंदाज, इशारे आणि सुरक्षितता उपायांबद्दल मी माहिती देऊ शकतो।\n\nतुम्हाला काय जाणून घ्यायचे आहे?",
+    gu: "નમસ્તે! હું **Landslide AI Assistant** છું.\n\nભૂસ્ખલનનું જોખમ, વરસાદ, માટીનો ભેજ, હવામાન ચેતવણીઓ અને સલામતીના પગલાં વિશે હું તમારી મદદ કરી શકું છું.\n\nતમે શું જાણવા માગો છો?",
+    pa: "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਂ **Landslide AI Assistant** ਹਾਂ।\n\nਮੈਂ ਜ਼ਮੀਨ ਖਿਸਕਣ ਦੇ ਖ਼ਤਰੇ, ਮੀਂਹ ਦੀ ਮਾਤਰਾ, ਮਿੱਟੀ ਦੀ ਨਮੀ, ਮੌਸਮ ਸੰਬੰਧੀ ਚੇਤਾਵਨੀਆਂ ਅਤੇ ਸੁਰੱਖਿਆ ਉਪਾਵਾਂ ਬਾਰੇ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ।\n\nਤੁਸੀਂ ਕੀ ਜਾਣਨਾ ਚਾਹੁੰਦੇ ਹੋ?",
+    or: "ନମସ୍କାର! ମୁଁ **Landslide AI Assistant**।\n\nଭୂସ୍ଖଳନ ବିପଦ, ବର୍ଷାର ପରିମାଣ, ମାଟିର ଆର୍ଦ୍ରତା, ପାଣିପାଗ ସତର୍କତା ଏବଂ ସୁରକ୍ଷା ପଦକ୍ଷେପ ସମ୍ପର୍କରେ ମୁଁ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିପାରିବି।\n\nଆପଣ କ'ଣ ଜାଣିବାକୁ ଚାହାଁନ୍ତି?",
+    as: "নমস্কাৰ! মই **Landslide AI Assistant**।\n\nভূমিস্খলনৰ আশংকা, বৰষুণৰ পৰিমাণ, মাটিৰ আৰ্দ্ৰতা, বতৰৰ সতৰ্কবাণী আৰু সুৰক্ষা ব্যৱস্থা সম্পৰ্কে সহায় কৰিব পাৰোঁ।\n\nআপুনি কি জানিব বিচাৰে?",
+    ur: "آداب! میں **Landslide AI Assistant** ہوں۔\n\nمیں لینڈ سلائیڈنگ کے خطرات، بارش، مٹی کی نمی، ایمرجنسی الرٹس اور حفاظتی تدابیر کے متعلق آپ کی رہنمائی کر سکتا ہوں۔\n\nآپ کیا جاننا چاہتے ہیں؟",
+    ne: "नमस्ते! म **Landslide AI Assistant** हुँ।\n\nम पहिरोको जोखिम, वर्षाको मात्रा, माटोको आर्द्रता, मौसमी चेतावनी तथा सुरक्षा उपायहरूका बारेमा तपाईंलाई जानकारी दिन सक्छु।\n\nतपाईं के जान्न चाहनुहुन्छ?",
+    kok: "नमस्कार! हांव **Landslide AI Assistant**.\n\nपोंवळी/ल्ह्हान-व्हड हुंवार, पावसाचें प्रमाण, मातीचो ओलसाण, शिटकावण्यो आनी सुरक्षेचे उपाव हांचेविशीं हांव म्हायती दिवंक शकतां.\n\nतुका कितें जाणून घेवंक जाय?",
+    ks: "سلام! بؤ چُھس **Landslide AI Assistant**۔\n\nبؤ ہیٚکہٕ پٔسہِ پؠنہٕ کِس خطرَس، رُد کِس مقدار، زمیٖن ہِنٛزِ نَمی تہٕ بچاوُک تدبیٖرَن مُتعلِق رہنُمٲیی کٔرِتھ۔\n\nتۄہہِ کیا چھُو زانُن؟",
+    doi: "नमस्ते! मैं **Landslide AI Assistant** आँ।\n\nमैं लैण्डस्लाइड दे खतरे, बरखा, मिट्टी दी नमी, चेतावनियां ते सुरक्षा उपायें बारै जानकारी देई सकना आँ।\n\nतुस केह् जानना चाह्ने ओ?",
+    sa: "नमस्ते! अहम् **Landslide AI Assistant** अस्मि।\n\nअहं भूस्खलन-संकटस्य, वृष्टेः, मृत्तिकायाः आद्रतायाः, सुरक्षा-उपायानां च विषये भवते सहाय्यं कर्तुं शक्नोमि।\n\nभवान् किं ज्ञातुम् इच्छति?",
+    mai: "प्रणाम! हम **Landslide AI Assistant** छी।\n\nहम भूस्खलनक खतरा, वर्षा, माटिक नमी, चेतावनी आ सुरक्षा उपाएक संबंधमे अहाँक सहायता कऽ सकैत छी।\n\nअहाँ की जनए चाहैत छी?",
+    mni: "খোৰুমজৰি! ঐদি **Landslide AI Assistant** নি।\n\nঐনা চীংথক তুকখৎপগী খুদোংথিবা, নোংগী চাং, লৈবাক্কী অশেৎপা, অমসুং ঙাকথোক্নবগী থৌরাংশিংগী মতাংদা মতেং পাংবা ঙমগনি।\n\nনহাক্না করি খঙবা পাম্বগে?",
+    sat: "ᱡᱚᱦᱟᱨ! ᱤᱧ ᱫᱚ **Landslide AI Assistant** ᱠᱟᱱᱟᱹᱧ᱾\n\nᱤᱧ ᱫᱚ ᱦᱟᱥᱟ ᱫᱷᱟᱹᱥᱩᱨ ᱵᱚᱛᱚᱨ, ᱫᱟᱜ ᱡᱟᱹᱲᱤ, ᱦᱟᱥᱟ ᱨᱮᱭᱟᱜ ᱚᱫᱽ, ᱟᱨ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱩᱯᱟᱹᱭ ᱠᱚ ᱵᱟᱵᱚᱛ ᱜᱚᱲᱚᱧ ᱮᱢ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾\n\nᱟᱢ ᱪᱮᱫ ᱵᱟᱰᱟᱭ ᱥᱟᱱᱟᱭᱮᱫ ᱢᱮᱭᱟ?",
+    brx: "खुलुमबाय! आं **Landslide AI Assistant**।\n\nआं हास्र्लिनायनि खैफोद, अखा, हायाव दै थानाय, सांग्रांथि आरो रैखाथि राहाफोरनि सोमोन्दै नोंखौ मदद खालामनो हागौ।\n\nनों मा मिथिनो लुबैदों?",
+    sd: "سلام! مان **Landslide AI Assistant** آهيان.\n\nمان لينڊ سلائيڊنگ جي خطري، برسات، مٽيءَ جي آلاڻ، الرٽس ۽ حفاظتي قدمن بابت اوهان جي مدد ڪري سگهان ٿو.\n\nاوهان ڇا ڄاڻڻ چاهيو ٿا؟"
+  },
+
+  // Language Change Confirmation
+  langSwitchedMessages: {
+    en: "Language switched to **English**. You can now ask questions in English.",
+    hi: "भाषा बदलकर **हिन्दी** कर दी गई है। अब आप हिन्दी में प्रश्न पूछ सकते हैं।",
+    ta: "மொழி **தமிழ்** என மாற்றப்பட்டது. இப்போது நீங்கள் தமிழில் கேள்விகளை கேட்கலாம்.",
+    te: "భాష **తెలుగు**గా మార్చబడింది. ఇప్పుడు మీరు తెలుగులో ప్రశ్నలు అడగవచ్చు.",
+    kn: "ಭಾಷೆಯನ್ನು **ಕನ್ನಡ**ಕ್ಕೆ ಬದಲಾಯಿಸಲಾಗಿದೆ. ನೀವು ಈಗ ಕನ್ನಡದಲ್ಲಿ ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಬಹುದು.",
+    ml: "ഭാഷ **മലയാളം** ആയി മാറ്റി. ഇപ്പോൾ നിങ്ങൾക്ക് മലയാളത്തിൽ ചോദ്യങ്ങൾ ചോദിക്കാം.",
+    bn: "ভাষা পরিবর্তন করে **বাংলা** করা হয়েছে। এখন আপনি বাংলায় প্রশ্ন করতে পারেন।",
+    mr: "भाषा बदलून **मराठी** केली गेली आहे. आता तुम्ही मराठीत प्रश्न विचारू शकता.",
+    gu: "ભાષા બદલીને **ગુજરાતી** કરવામાં આવી છે. હવે તમે ગુજરાતીમાં પ્રશ્નો પૂછી શકો છો.",
+    pa: "ਭਾਸ਼ਾ ਬਦਲ ਕੇ **ਪੰਜਾਬੀ** ਕਰ ਦਿੱਤੀ ਗਈ ਹੈ। ਹੁਣ ਤੁਸੀਂ ਪੰਜਾਬੀ ਵਿੱਚ ਸਵਾਲ ਪੁੱਛ ਸਕਦੇ ਹੋ।",
+    or: "ଭାଷା **ଓଡ଼ିଆ**କୁ ପରିବର୍ତ୍ତିତ ହୋଇଛି। ଏବେ ଆପଣ ଓଡ଼ିଆରେ ପ୍ରଶ୍ନ ପଚାରିପାରିବେ।",
+    as: "ভাষা সলনি কৰি **অসমীয়া** কৰা হ'ল। এতিয়া আপুনি অসমীয়াত প্ৰশ্ন সুধিব পাৰে।",
+    ur: "زبان تبدیل کر کے **اردو** کر دی گئی ہے۔ اب آپ اردو میں سوالات پوچھ سکتے ہیں۔",
+    ne: "भाषा परिवर्तन गरी **नेपाली** गरियो। अब तपाईं नेपालीमा प्रश्न सोध्न सक्नुहुन्छ।",
+    kok: "भास बदलून **कोंकणी** केल्या. आतां तुमी कोंकणींत प्रस्न विचारूंक शकतात.",
+    ks: "زبان بَدلاوتھ کٔرؠ وا **كٲشُر**۔ وۆنؠ ہؠکِو تۄہی كٲشِر پأٹھؠ سوال پُژھِتھ۔",
+    doi: "बोली बदली करी **डोगरी** करी दित्ती गेई ऐ। हुण तुस डोगरी च सवाल पुच्छी सकदे ओ।",
+    sa: "भाषा परिवर्त्य **संस्कृतम्** कृता। अधुना भवान् संस्कृतेन प्रश्नान् प्रष्टुं शक्नोति।",
+    mai: "भाषा बदलि कऽ **मैथिली** कएल गेल। आब अहाँ मैथिलीमे प्रश्न पूछि सकैत छी।",
+    mni: "লোন হোংদোক্তুনা **মৈতৈলোন্** ওইরে। হৌজিক নহাক্না মৈতৈলোন্দা ৱাহং হংবা য়ারে।",
+    sat: "ᱯᱟᱹᱨᱥᱤ ᱵᱚᱫᱚᱞ ᱠᱟᱛᱮ **ᱥᱟᱱᱛᱟᱲᱤ** ᱦᱩᱭᱮᱱᱟ᱾ ᱱᱤᱛᱚᱜ ᱟᱢ ᱥᱟᱱᱛᱟᱲᱤ ᱛᱮ ᱠᱩᱠᱞᱤ ᱠᱩᱞᱤ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱢ᱾",
+    brx: "रावखौ सोलायनानै **बड़ो** खालामबाय। दा नों बड़ो रावजों सोंलु सोंनो हागौ।",
+    sd: "ٻولي مٽائي **سنڌي** ڪئي وئي آهي. هاڻي اوهان سنڌي ۾ سوال پڇي سگهو ٿا."
+  },
+
+  // Pre-configured Quick Questions for All 23 Languages
   quickQuestions: {
     en: [
       "What's the current risk?",
@@ -30,7 +112,17 @@ const LandslideAIChatbot = {
       "Check mountain slope",
       "Show high-risk areas",
       "What should I do during a landslide warning?",
-      "Explain the risk score"
+      "Emergency helpline numbers"
+    ],
+    hi: [
+      "वर्तमान भूस्खलन खतरा क्या है?",
+      "यह क्षेत्र संवेदनशील क्यों है?",
+      "बारिश की स्थिति जांचें",
+      "मिट्टी की नमी जांचें",
+      "पहाड़ी ढलान जांचें",
+      "उच्च जोखिम वाले क्षेत्र दिखाएं",
+      "भूस्खलन चेतावनी पर क्या करें?",
+      "आपातकालीन हेल्पलाइन नंबर"
     ],
     ta: [
       "தற்போதைய நிலச்சரிவு அபாயம் என்ன?",
@@ -41,11 +133,266 @@ const LandslideAIChatbot = {
       "அதிக அபாய பகுதிகளைக் காட்டு",
       "எச்சரிக்கையின் போது என்ன செய்ய வேண்டும்?",
       "அபாய மதிப்பெண்ணை விளக்குங்கள்"
+    ],
+    te: [
+      "ప్రస్తుత కొండచరియల ప్రమాదం ఏమిటి?",
+      "ఈ ప్రాంతం ఎందుకు ప్రమాదకరం?",
+      "వర్షపాతం వివరాలు చూడండి",
+      "నేల తేమను తనిఖీ చేయండి",
+      "పర్వత వాలును తనిఖీ చేయండి",
+      "అధిక ప్రమాద ప్రాంతాలను చూపించు",
+      "హెచ్చరిక ఉన్నప్పుడు ఏమి చేయాలి?",
+      "అత్యవసర హెల్ప్‌లైన్ నంబర్లు"
+    ],
+    kn: [
+      "ಪ್ರಸ್ತುತ ಭೂಕುಸಿತದ ಅಪಾಯವೇನು?",
+      "ಈ ಪ್ರದೇಶ ಏಕೆ ಅಪಾಯಕಾರಿ?",
+      "ಮಳೆಯ ಪ್ರಮಾಣ ಪರಿಶೀಲಿಸಿ",
+      "ಮಣ್ಣಿನ ತೇವಾಂಶ ಪರಿಶೀಲಿಸಿ",
+      "ಪರ್ವತ ಇಳಿಜಾರು ಪರಿಶೀಲಿಸಿ",
+      "ಹೆಚ್ಚಿನ ಅಪಾಯದ ಪ್ರದೇಶಗಳನ್ನು ತೋರಿಸಿ",
+      "ಎಚ್ಚರಿಕೆಯ ಸಮಯದಲ್ಲಿ ಏನು ಮಾಡಬೇಕು?",
+      "ತುರ್ತು ಸಹಾಯವಾಣಿ ಸಂಖ್ಯೆಗಳು"
+    ],
+    ml: [
+      "നിലവിലെ ഉരുൾപൊട്ടൽ സാധ്യത എത്ര?",
+      "ഈ പ്രദേശം എന്തുകൊണ്ട് അപകടകരമാണ്?",
+      "മഴയുടെ അളവ് പരിശോധിക്കുക",
+      "മണ്ണിലെ ഈർപ്പം പരിശോധിക്കുക",
+      "മലഞ്ചെരിവ് പരിശോധിക്കുക",
+      "ഉയർന്ന അപകടസാധ്യതയുള്ള പ്രദേശങ്ങൾ കാണിക്കുക",
+      "ഉരുൾപൊട്ടൽ മുന്നറിയിപ്പ് ഉണ്ടായാൽ എന്ത് ചെയ്യണം?",
+      "അടിയന്തര ഹെൽപ്പ്‌ലൈൻ നമ്പറുകൾ"
+    ],
+    bn: [
+      "বর্তমান ভূমিধসের ঝুঁকি কেমন?",
+      "এই এলাকাটি ঝুঁকিপূর্ণ কেন?",
+      "বৃষ্টিপাতের পরিমাণ দেখুন",
+      "মাটির আর্দ্রতা পরীক্ষা করুন",
+      "পাহাড়ের ঢাল পরীক্ষা করুন",
+      "উচ্চ ঝুঁকির এলাকাগুলি দেখান",
+      "ভূমিধসের সতর্কতায় কী করণীয়?",
+      "জরুরি হেল্পলাইন নম্বর"
+    ],
+    mr: [
+      "सध्याचा दरड कोसळण्याचा धोका काय?",
+      "हा भाग धोकादायक का आहे?",
+      "पावसाची स्थिती तपासा",
+      "मातीचा ओलावा तपासा",
+      "डोंगराळ उतार तपासा",
+      "धोकादायक क्षेत्रे दाखवा",
+      "इशारा मिळाल्यावर काय करावे?",
+      "आपत्कालीन हेल्पलाइन क्रमांक"
+    ],
+    gu: [
+      "હાલનું ભૂસ્ખલન જોખમ શું છે?",
+      "આ વિસ્તાર કેમ જોખમી છે?",
+      "વરસાદની સ્થિતિ તપાસો",
+      "માટીનો ભેજ તપાસો",
+      "પર્વતીય ઢોળાવ તપાસો",
+      "વધુ જોખમી વિસ્તારો બતાવો",
+      "ચેતવણી વખતે શું કરવું?",
+      "ઇમરજન્સી હેલ્પલાઇન નંબર"
+    ],
+    pa: [
+      "ਮੌਜੂਦਾ ਜ਼ਮੀਨ ਖਿਸਕਣ ਦਾ ਖ਼ਤਰਾ ਕੀ ਹੈ?",
+      "ਇਹ ਖੇਤਰ ਖ਼ਤਰਨਾਕ ਕਿਉਂ ਹੈ?",
+      "ਮੀਂਹ ਦੀ ਸਥਿਤੀ ਦੇਖੋ",
+      "ਮਿੱਟੀ ਦੀ ਨਮੀ ਦੇਖੋ",
+      "ਪਹਾੜੀ ਢਲਾਨ ਦੇਖੋ",
+      "ਵੱਧ ਖ਼ਤਰੇ ਵਾਲੇ ਖੇਤਰ ਦਿਖਾਓ",
+      "ਚੇਤਾਵਨੀ ਦੌਰਾਨ ਕੀ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ?",
+      "ਐਮਰਜੈਂਸੀ ਹੈਲਪਲਾਈਨ ਨੰਬਰ"
+    ],
+    or: [
+      "ବର୍ତ୍ତମାନର ଭୂସ୍ଖଳନ ବିପଦ କ'ଣ?",
+      "ଏହି ଅଞ୍ଚଳ କାହିଁକି ବିପଦପୂର୍ଣ୍ଣ?",
+      "ବର୍ଷାର ପରିମାଣ ଦେଖନ୍ତୁ",
+      "ମାଟିର ଆର୍ଦ୍ରତା ଯାଞ୍ଚ କରନ୍ତୁ",
+      "ପାହାଡ଼ ଢାଲୁ ଯାଞ୍ଚ କରନ୍ତୁ",
+      "ଅଧିକ ବିପଦପୂର୍ଣ୍ଣ ଅଞ୍ଚଳ ଦେଖାନ୍ତୁ",
+      "ବିପଦ ସମୟରେ କ'ଣ କରିବା ଉଚିତ୍?",
+      "ଜରୁରୀକାଳୀନ ହେଲ୍ପଲାଇନ ନମ୍ବର"
+    ],
+    as: [
+      "বৰ্তমানৰ ভূমিস্খলনৰ আশংকা কি?",
+      "এই অঞ্চলটো কিয় বিপজ্জনক?",
+      "বৰষুণৰ স্থিতি পৰীক্ষা কৰক",
+      "মাটিৰ আৰ্দ্ৰতা পৰীক্ষা কৰক",
+      "পাহাৰৰ ঢাল পৰীক্ষা কৰক",
+      "অধিক বিপদাপন্ন অঞ্চল দেখুৱাওক",
+      "ভূমিস্খলনৰ সতৰ্কতাত কি কৰিব লাগে?",
+      "জৰুৰীকালীন হেল্পলাইন নম্বৰ"
+    ],
+    ur: [
+      "موجودہ لینڈ سلائیڈنگ کا خطرہ کیا ہے؟",
+      "یہ علاقہ کیوں خطرناک ہے؟",
+      "بارش کی تفصیلات دیکھیں",
+      "مٹی کی نمی چیک کریں",
+      "ڈھلوان کی حالت دیکھیں",
+      "ہائی رسک والے علاقے دکھائیں",
+      "وارننگ کے دوران کیا کرنا چاہیے؟",
+      "ایمرجنسی ہیلپ لائن نمبرز"
+    ],
+    ne: [
+      "वर्तमान पहिरोको जोखिम कति छ?",
+      "यो क्षेत्र किन जोखिमपूर्ण छ?",
+      "वर्षाको मात्रा हेर्नुहोस्",
+      "माटोको आर्द्रता जाँच्नुहोस्",
+      "पहाडी भिरालोपन जाँच्नुहोस्",
+      "उच्च जोखिम क्षेत्रहरू देखाउनुहोस्",
+      "पहिरोको चेतावनीमा के गर्ने?",
+      "आपतकालीन हेल्पलाइन नम्बर"
+    ],
+    kok: [
+      "सध्याचो ल्हान-व्हड देंवतेचो धोको कितें?",
+      "हो वाठार धोक्याचो कित्याक?",
+      "पावसाचें प्रमाण पळयात",
+      "मातीची ओलसाण तपासात",
+      "डोंगरी देंवतेची स्थिती",
+      "धोक्याचे वाठार दाखयात",
+      "शिटकावणे वेळार कितें करचें?",
+      "आपत्कालीन संपर्क नंबर"
+    ],
+    ks: [
+      "موجودٕ پسہِ پؠنہٕ کِس خطرَس کیا چھُ؟",
+      "یہِ علاقہٕ کیازِ چھُ خطرناک؟",
+      "رُدُک مقدار وُچھِو",
+      "زمیٖنٕچ نمی جانچیو",
+      "پہاڑی ڈھلوان وُچھِو",
+      "خطرناک علاقہٕ ہاوِو",
+      "وارننگ دوران کیا کَرُن؟",
+      "ایمرجنسی ہیلپ لائن نمبر"
+    ],
+    doi: [
+      "इस बेले लैण्डस्लाइड दा खतरा केह् ऐ?",
+      "एह इलाका कियूँ खतरनाक ऐ?",
+      "बरखा दी स्थिति दिक्खो",
+      "मिट्टी दी नमी जाचो",
+      "पहाड़ी ढलान दिक्खो",
+      "खतरे आले इलाके दस्सो",
+      "चेतावनी बेले केह् करना चाहिदा?",
+      "एमरजेंसी हेल्पलाइन नंबर"
+    ],
+    sa: [
+      "वर्तमान-भूस्खलन-संकटं किम्?",
+      "अयम् प्रदेशः किमर्थं संकटमयः?",
+      "वृष्टि-प्रमाणं पश्यतु",
+      "मृत्तिकायाः आद्रताम् पश्यतु",
+      "पर्वतीय-प्रवणतां पश्यतु",
+      "अति-संकटापन्न-क्षेत्राणि दर्शयतु",
+      "संकट-काले किं करणीयम्?",
+      "आपत्कालीन-सम्पर्क-संख्याः"
+    ],
+    mai: [
+      "वर्तमान भूस्खलनक खतरा की अछि?",
+      "ई क्षेत्र किएक खतरनाक अछि?",
+      "वर्षाक स्थिति देखू",
+      "माटिक नमी जाँचू",
+      "पहाड़ी ढलान देखू",
+      "उच्च जोखिम क्षेत्र देखाउ",
+      "चेतावनी काल की करबाक चाही?",
+      "आपातकालीन हेल्पलाइन नंबर"
+    ],
+    mni: [
+      "হৌজিক চীংথক তুকখৎপগী খুদোংথিবা করি?",
+      "মফমসি করিগী খুদোংথিবগে?",
+      "নোংগী চাং য়েংবা",
+      "লৈবাক্কী অশেৎপা য়েংবা",
+      "চীংগী চিংশাং য়েংবা",
+      "খুদোংথিবা মফমশিং উৎপু",
+      "চেকশিনৱা মতমদা করি তৌগদগে?",
+      "ইমার্জেন্সি হেল্পলাইন নম্বর"
+    ],
+    sat: [
+      "ᱱᱤᱛᱚᱜᱟᱜ ᱦᱟᱥᱟ ᱫᱷᱟᱹᱥᱩᱨ ᱵᱚᱛᱚᱨ ᱪᱮᱫ?",
+      "ᱱᱚᱣᱟ ᱡᱟᱭᱜᱟ ᱪᱮᱫᱟᱜ ᱵᱚᱛᱚᱨᱟᱱ?",
+      "ᱫᱟᱜ ᱡᱟᱹᱲᱤ ᱧᱮᱞ ᱢᱮ",
+      "ᱦᱟᱥᱟ ᱨᱮᱭᱟᱜ ᱚᱫᱽ ᱧᱮᱞ ᱢᱮ",
+      "ᱵᱩᱨᱩ ᱰᱷᱟᱞ ᱧᱮᱞ ᱢᱮ",
+      "ᱵᱚᱛᱚᱨᱟᱱ ᱡᱟᱭᱜᱟ ᱠᱚ ᱩᱫᱩᱜ ᱢᱮ",
+      "ᱵᱚᱛᱚᱨ ᱚᱠᱛᱚ ᱨᱮ ᱪᱮᱫ ᱪᱤᱠᱟᱹᱭᱟ?",
+      "ᱟᱯᱚᱛᱠᱟᱞᱤᱱ ᱦᱮᱞᱯᱞᱟᱭᱤᱱ ᱮᱞ"
+    ],
+    brx: [
+      "दानि हास्र्लिनायनि खैफोदा मा?",
+      "बे ओनसोलआ मानो खैफोदगोनां?",
+      "अखानि बिबां नाय",
+      "हानि सिदोबथि नाय",
+      "हाजोनि गोख्रोंथि नाय",
+      "गिबिखां ओनसोलफोरखौ दिनथि",
+      "सांग्रांथिनि समाव मा खालामनांगौ?",
+      "जायख्लं हेल्पलाइन नम्बर"
+    ],
+    sd: [
+      "هاڻوڪو لينڊ سلائيڊنگ جو خطرو ڇا آهي؟",
+      "هي علائقو ڇو خطرناڪ آهي؟",
+      "برسات جي صورتحال ڏسو",
+      "مٽيءَ جي آلاڻ چيڪ ڪريو",
+      "پهاڙي لاهي ڏسو",
+      "خطرناڪ علائقا ڏيکاريو",
+      "وارننگ دوران ڇا ڪجي؟",
+      "ايمرجنسي هيلپ لائن نمبر"
     ]
+  },
+
+  // Helper to dynamically detect Indian language from text or fall back to activeLanguage
+  detectLanguage(text) {
+    if (!text || typeof text !== "string") return this.activeLanguage || "en";
+    const str = text.trim();
+    if (!str) return this.activeLanguage || "en";
+
+    // Tamil script
+    if (/[\u0B80-\u0BFF]/.test(str)) return "ta";
+    // Telugu script
+    if (/[\u0C00-\u0C7F]/.test(str)) return "te";
+    // Kannada script
+    if (/[\u0C80-\u0CFF]/.test(str)) return "kn";
+    // Malayalam script
+    if (/[\u0D00-\u0D7F]/.test(str)) return "ml";
+    // Gujarati script
+    if (/[\u0A80-\u0AFF]/.test(str)) return "gu";
+    // Gurmukhi (Punjabi) script
+    if (/[\u0A00-\u0A7F]/.test(str)) return "pa";
+    // Odia script
+    if (/[\u0B00-\u0B7F]/.test(str)) return "or";
+    // Bengali & Assamese script
+    if (/[\u0980-\u09FF]/.test(str)) {
+      if (/[\u09F0\u09F1]/.test(str)) return "as";
+      return "bn";
+    }
+    // Arabic script (Urdu / Kashmiri / Sindhi)
+    if (/[\u0600-\u06FF]/.test(str)) {
+      if (this.activeLanguage === "ks") return "ks";
+      if (this.activeLanguage === "sd") return "sd";
+      return "ur";
+    }
+    // Ol Chiki script (Santali)
+    if (/[\u1C50-\u1C7F]/.test(str)) return "sat";
+    // Meitei Mayek script (Manipuri)
+    if (/[\uABC0-\uABFF\uAAE0-\uAAFF]/.test(str)) return "mni";
+    // Devanagari script (Hindi, Marathi, Nepali, Sanskrit, Maithili, Dogri, Bodo, Konkani)
+    if (/[\u0900-\u097F]/.test(str)) {
+      if (["mr", "ne", "sa", "mai", "doi", "brx", "kok"].includes(this.activeLanguage)) {
+        return this.activeLanguage;
+      }
+      return "hi"; // Default Devanagari to Hindi
+    }
+
+    return this.activeLanguage || "en";
+  },
+
+  getLanguageInfo(lang) {
+    return this.indianLanguages[lang] || this.indianLanguages["en"];
   },
 
   init() {
     this.conversationId = "CHAT-SES-" + Date.now().toString(36);
+    // Synchronize all language selectors with activeLanguage
+    const selectors = document.querySelectorAll(".chatbot-lang-select");
+    selectors.forEach(sel => {
+      sel.value = this.activeLanguage;
+    });
     this.initSpeechRecognition();
     this.bindEvents();
     this.updateAIStatusBadge();
@@ -58,7 +405,8 @@ const LandslideAIChatbot = {
       this.recognition = new SpeechRec();
       this.recognition.continuous = false;
       this.recognition.interimResults = true;
-      this.recognition.lang = this.activeLanguage === "ta" ? "ta-IN" : "en-US";
+      const speechCode = this.indianLanguages[this.activeLanguage]?.speechCode || "en-IN";
+      this.recognition.lang = speechCode;
 
       this.recognition.onstart = () => {
         this.isVoiceActive = true;
@@ -101,7 +449,8 @@ const LandslideAIChatbot = {
     if (this.isVoiceActive) {
       this.recognition.stop();
     } else {
-      this.recognition.lang = this.activeLanguage === "ta" ? "ta-IN" : "en-US";
+      const speechCode = this.indianLanguages[this.activeLanguage]?.speechCode || "en-IN";
+      this.recognition.lang = speechCode;
       try {
         this.recognition.start();
       } catch (err) {
@@ -129,23 +478,31 @@ const LandslideAIChatbot = {
   },
 
   setLanguage(lang) {
+    if (!this.indianLanguages[lang]) lang = "en";
     this.activeLanguage = lang;
+    try {
+      localStorage.setItem("landslide_chat_language", lang);
+    } catch (_) {}
+
     const selectors = document.querySelectorAll(".chatbot-lang-select");
     selectors.forEach(sel => {
       sel.value = lang;
     });
 
+    if (this.recognition) {
+      this.recognition.lang = this.indianLanguages[lang]?.speechCode || "en-IN";
+    }
+
     if (this.chatHistory.length === 0) {
       this.renderInitialWelcome();
     } else {
-      const msg = lang === "ta"
-        ? "மொழி **தமிழ்** என மாற்றப்பட்டது. இப்போது நீங்கள் தமிழில் கேள்விகளை கேட்கலாம்."
-        : "Language switched to **English**. You can now ask questions in English.";
+      const langMeta = this.getLanguageInfo(lang);
+      const msg = this.langSwitchedMessages[lang] || `Language switched to **${langMeta.name}** (${langMeta.nativeName}). You can now ask questions in ${langMeta.name}.`;
       this.appendAIMessage({
         message: msg,
-        sources: ["System"],
+        sources: ["System Multilingual Engine"],
         actionButtons: [],
-        suggestedQuestions: this.quickQuestions[lang].slice(0, 4)
+        suggestedQuestions: (this.quickQuestions[lang] || this.quickQuestions["en"]).slice(0, 4)
       });
     }
   },
@@ -179,19 +536,18 @@ const LandslideAIChatbot = {
   },
 
   renderInitialWelcome() {
-    const isTa = this.activeLanguage === "ta";
-    const welcomeText = isTa
-      ? "வணக்கம்! நான் **Landslide AI Assistant**.\n\nநிலச்சரிவு அபாயங்கள், மழைப்பொழிவு, மண் ஈரப்பதம், பேரிடர் எச்சரிக்கைகள் மற்றும் பாதுகாப்பு வழிமுறைகள் குறித்து உங்களுக்கு உதவ முடியும்.\n\nநீங்கள் என்ன தெரிந்து கொள்ள விரும்புகிறீர்கள்?"
-      : "Hello! I'm **Landslide AI Assistant**.\n\nI can help you understand landslide risks, environmental conditions, alerts, locations and recommended safety actions.\n\nWhat would you like to know?";
+    const lang = this.activeLanguage || "en";
+    const langMeta = this.getLanguageInfo(lang);
+    const welcomeText = this.welcomeMessages[lang] || this.welcomeMessages["en"];
 
     const initialData = {
       message: welcomeText,
-      sources: ["Landslide Knowledge Base"],
+      sources: ["Landslide Knowledge Base", `${langMeta.name} Intelligence Feed`],
       actionButtons: [
         { label: "🗺️ View Live Map", action: "VIEW_MAP" },
         { label: "⚠️ View Active Alerts", action: "VIEW_ALERTS" }
       ],
-      suggestedQuestions: this.quickQuestions[this.activeLanguage],
+      suggestedQuestions: (this.quickQuestions[lang] || this.quickQuestions["en"]).slice(0, 8),
       isWelcome: true
     };
 
@@ -283,7 +639,11 @@ const LandslideAIChatbot = {
       `- [${a.level || 'WARNING'}] ${a.location || a.location_name}: ${a.action || a.recommended_action}`
     ).join("\n");
 
-    const isTa = this.activeLanguage === "ta" || /[\u0B80-\u0BFF]/.test(userText);
+    const effectiveLang = this.detectLanguage(userText);
+    const langMeta = this.getLanguageInfo(effectiveLang);
+    const langInstruction = effectiveLang === "en"
+      ? "Reply in English."
+      : `Reply fluently, naturally, accurately, and authoritatively in ${langMeta.name} (${langMeta.nativeName}). Use authentic ${langMeta.name} script and standard geotechnical and disaster management vocabulary suitable for Indian residents.`;
 
     const systemPrompt = `You are the authoritative AI Landslide Early Warning & Geotechnical Assistant for the Western Ghats and Himalayan mountain ranges in India.
 Current live monitoring system status:
@@ -309,7 +669,7 @@ Instructions:
 3. If the user asks about landslides, road conditions, safety, or emergency preparedness, provide life-saving, authoritative advice using the live telemetry.
 4. If the user asks general questions outside landslide science (e.g. general science, geography, weather, computing, general knowledge), answer them directly, intelligently, and helpfully, and optionally connect back to mountain environmental safety where suitable.
 5. Format your response cleanly using GitHub-flavored markdown with bold headers and bullet points.
-6. ${isTa ? 'Reply fluently, naturally, and authoritatively in Tamil (தமிழ்).' : 'Reply in English.'}
+6. ${langInstruction}
 Keep answers comprehensive yet concise (around 2 to 4 concise paragraphs or bulleted points).`;
 
     const model = this.geminiModel || "gemini-1.5-flash";
@@ -372,12 +732,7 @@ Keep answers comprehensive yet concise (around 2 to 4 concise paragraphs or bull
       intent: "GEMINI_GENERATIVE_AI",
       sources: [`Google ${model} (Live Generative AI)`, "Live Geotechnical Telemetry"],
       actionButtons: actionButtons.slice(0, 3),
-      suggestedQuestions: [
-        "What is the current risk?",
-        "What causes a landslide?",
-        "What are the warning signs?",
-        "Emergency helpline numbers"
-      ],
+      suggestedQuestions: (this.quickQuestions[effectiveLang] || this.quickQuestions["en"]).slice(0, 4),
       isDemoMode: false,
       modelUsed: model
     };
@@ -391,13 +746,17 @@ Keep answers comprehensive yet concise (around 2 to 4 concise paragraphs or bull
       ? LANDSLIDE_APP_DATA.locations
       : [];
 
-    const isTa = this.activeLanguage === "ta" || /[\u0B80-\u0BFF]/.test(userText);
+    const effectiveLang = this.detectLanguage(userText);
+    const langMeta = this.getLanguageInfo(effectiveLang);
     const model = this.openaiModel || "gpt-4o-mini";
+    const langInstruction = effectiveLang === "en"
+      ? "Reply in English."
+      : `Reply fluently, naturally, accurately, and authoritatively in ${langMeta.name} (${langMeta.nativeName}) using authentic script and terminology.`;
 
-    const systemPrompt = `You are the authoritative AI Landslide Early Warning Assistant for Western Ghats and Himalayan regions.
+    const systemPrompt = `You are the authoritative AI Landslide Early Warning Assistant for Western Ghats and Himalayan regions in India.
 Answer ANY question the user asks accurately, politely, and relevantly.
 Ground your explanations in geotechnical engineering, weather radar, and satellite InSAR telemetry where applicable.
-${isTa ? 'Reply fluently in Tamil (தமிழ்).' : 'Reply in English.'}
+${langInstruction}
 Use clean markdown formatting with bullet points.`;
 
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -433,7 +792,7 @@ Use clean markdown formatting with bullet points.`;
         { label: "🗺️ View Live Risk Map", action: "VIEW_MAP" },
         { label: "⚠️ View Active Alerts", action: "VIEW_ALERTS" }
       ],
-      suggestedQuestions: ["What causes a landslide?", "What is the current risk?", "Emergency helpline numbers"],
+      suggestedQuestions: (this.quickQuestions[effectiveLang] || this.quickQuestions["en"]).slice(0, 4),
       isDemoMode: false,
       modelUsed: model
     };
@@ -625,7 +984,9 @@ Use clean markdown formatting with bullet points.`;
 
   generateClientSideResponse(userText) {
     const textLower = userText.toLowerCase().trim();
-    const isTa = this.activeLanguage === "ta" || /[\u0B80-\u0BFF]/.test(userText);
+    const effectiveLang = this.detectLanguage(userText);
+    const isTa = effectiveLang === "ta";
+    const langMeta = this.getLanguageInfo(effectiveLang);
 
     // Guardrail against credential extraction
     if (textLower.includes("api key") || textLower.includes("password") || textLower.includes("secret") || textLower.includes("system prompt")) {
@@ -636,7 +997,7 @@ Use clean markdown formatting with bullet points.`;
         intent: "INJECTION_PROBE",
         sources: ["Security Guardrails"],
         actionButtons: [],
-        suggestedQuestions: this.quickQuestions[isTa ? "ta" : "en"].slice(0, 3),
+        suggestedQuestions: (this.quickQuestions[effectiveLang] || this.quickQuestions["en"]).slice(0, 3),
         isDemoMode: true
       };
     }
@@ -1604,13 +1965,15 @@ Use clean markdown formatting with bullet points.`;
     // -------------------------------------------------------------
     // 33. ADAPTIVE NATURAL LANGUAGE SYNTHESIZER (For ANY Other Custom Question)
     // -------------------------------------------------------------
-    return this.generateAdaptiveResponse(userText, textLower, isTa, locations);
+    return this.generateAdaptiveResponse(userText, textLower, effectiveLang, locations);
   },
 
   /**
    * Adaptive Intelligent Response Engine for Open-Ended & General Inquiries
    */
-  generateAdaptiveResponse(userText, textLower, isTa, locations) {
+  generateAdaptiveResponse(userText, textLower, effectiveLang, locations) {
+    const isTa = effectiveLang === "ta";
+    const langMeta = this.getLanguageInfo(effectiveLang);
     const avgRain = Math.round(locations.reduce((acc, l) => acc + (l.rainfall_24h_mm || 0), 0) / Math.max(1, locations.length));
     const avgSoil = Math.round(locations.reduce((acc, l) => acc + (l.soil_moisture_pct || 0), 0) / Math.max(1, locations.length));
     const sortedDesc = [...locations].sort((a, b) => (b.risk_probability || 0) - (a.risk_probability || 0));
@@ -1647,26 +2010,38 @@ Use clean markdown formatting with bullet points.`;
       subjectAnswerTa = `*" ${this.escapeHTML(userText)} "* குறித்த உங்கள் கேள்விக்கு நன்றி. நிலச்சரிவு முன்னெச்சரிக்கை உதவியாளராக, நான் புவியியல் பாதுகாப்பு, வானிலை மற்றும் சென்சார் தரவுகளை ஆய்வு செய்கிறேன். தற்போது **${highestRiskLoc.name}** அதிக அபாயத்துடன் (${highestRiskLoc.risk_probability}%) கண்காணிக்கப்படுகிறது; சராசரி மழை **${avgRain} mm** மற்றும் மண் ஈரப்பதம் **${avgSoil}%** ஆக உள்ளது.`;
     }
 
-    const message = isTa
-      ? `💡 **பதில் (AI Assistant Response):**\n\n${subjectAnswerTa}\n\n**தற்போதைய கள நிலவரம்:**\n• சராசரி 24h மழை: **${avgRain} mm**\n• சராசரி மண் ஈரப்பதம்: **${avgSoil}%**\n• உச்ச அபாய பகுதி: **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\nமேலும் விவரங்களை அறிய கீழே உள்ள பொத்தான்களைப் பயன்படுத்தவும் அல்லது குறிப்பிட்ட கேள்விகளைக் கேட்கலாம்.`
-      : `💡 **AI Assistant Response:**\n\n${subjectAnswerEn}\n\n**Current Live Environmental Telemetry:**\n• **Regional Average 24h Rain:** **${avgRain} mm**\n• **Mean Subsurface Soil Moisture:** **${avgSoil}%**\n• **Highest Monitored Sector:** **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\nFeel free to explore live sensor layers, active bulletins, or ask about any specific location or geotechnical topic!`;
+    let message = "";
+    if (isTa) {
+      message = `💡 **பதில் (AI Assistant Response):**\n\n${subjectAnswerTa}\n\n**தற்போதைய கள நிலவரம்:**\n• சராசரி 24h மழை: **${avgRain} mm**\n• சராசரி மண் ஈரப்பதம்: **${avgSoil}%**\n• உச்ச அபாய பகுதி: **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\nமேலும் விவரங்களை அறிய கீழே உள்ள பொத்தான்களைப் பயன்படுத்தவும் அல்லது குறிப்பிட்ட கேள்விகளைக் கேட்கலாம்.`;
+    } else if (effectiveLang === "hi") {
+      message = `💡 **AI सहायक उत्तर (AI Assistant Response):**\n\n${subjectAnswerEn}\n\n**वर्तमान पर्यावरणीय स्थिति (Live Telemetry):**\n• **औसत 24 घंटे की बारिश:** **${avgRain} mm**\n• **मिट्टी की औसत नमी:** **${avgSoil}%**\n• **उच्चतम जोखिम वाला क्षेत्र:** **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\nआप किसी भी क्षेत्र, बारिश, मिट्टी की नमी या सुरक्षा उपायों के बारे में और प्रश्न पूछ सकते हैं।`;
+    } else if (effectiveLang === "te") {
+      message = `💡 **AI సహాయక సమాధానం (AI Assistant Response):**\n\n${subjectAnswerEn}\n\n**ప్రస్తుత వాతావరణ సమాచారం (Live Telemetry):**\n• **సగటు 24 గంటల వర్షపాతం:** **${avgRain} mm**\n• **నేల తేమ శాతం:** **${avgSoil}%**\n• **అత్యధిక ప్రమాదకర ప్రాంతం:** **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\nమీరు ఏ ప్రాంతం లేదా భద్రతా చర్యల గురించైనా మరిన్ని ప్రశ్నలు అడగవచ్చు.`;
+    } else if (effectiveLang === "kn") {
+      message = `💡 **AI ಸಹಾಯಕ ಪ್ರತಿಕ್ರಿಯೆ (AI Assistant Response):**\n\n${subjectAnswerEn}\n\n**ಪ್ರಸ್ತುತ ಪರಿಸರ ಮಾಹಿತಿ (Live Telemetry):**\n• **ಸರಾಸರಿ 24 ಗಂಟೆಗಳ ಮಳೆ:** **${avgRain} mm**\n• **ಮಣ್ಣಿನ ತೇವಾಂಶ:** **${avgSoil}%**\n• **ಗರಿಷ್ಠ ಅಪಾಯದ ವಲಯ:** **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\nನೀವು ಯಾವುದೇ ಪ್ರದೇಶ ಅಥವಾ ಸುರಕ್ಷತಾ ಕ್ರಮಗಳ ಬಗ್ಗೆ ಹೆಚ್ಚಿನ ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಬಹುದು.`;
+    } else if (effectiveLang === "ml") {
+      message = `💡 **AI അസിസ്റ്റന്റ് മറുപടി (AI Assistant Response):**\n\n${subjectAnswerEn}\n\n**നിലവിലെ കാലാവസ്ഥാ വിവരങ്ങൾ (Live Telemetry):**\n• **ശരാശരി 24 മണിക്കൂർ മഴ:** **${avgRain} mm**\n• **മണ്ണിലെ ഈർപ്പം:** **${avgSoil}%**\n• **ഏറ്റവും ഉയർന്ന അപകട മേഖല:** **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\nഏതെങ്കിലും പ്രദേശം അല്ലെങ്കിൽ സുരക്ഷാ മാർഗ്ഗങ്ങളെക്കുറിച്ച് നിങ്ങൾക്ക് കൂടുതൽ ചോദിക്കാം.`;
+    } else if (effectiveLang === "bn") {
+      message = `💡 **AI সহকারী উত্তর (AI Assistant Response):**\n\n${subjectAnswerEn}\n\n**বর্তমান পরিবেশগত তথ্য (Live Telemetry):**\n• **গড় ২৪ ঘণ্টার বৃষ্টিপাত:** **${avgRain} mm**\n• **মাটির আর্দ্রতা:** **${avgSoil}%**\n• **সর্বোচ্চ ঝুঁকিপূর্ণ অঞ্চল:** **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\nআপনি নির্দিষ্ট কোনো স্থান বা সুরক্ষা ব্যবস্থা সম্পর্কে আরও জানতে পারেন।`;
+    } else if (effectiveLang === "mr") {
+      message = `💡 **AI सहाय्यक उत्तर (AI Assistant Response):**\n\n${subjectAnswerEn}\n\n**सध्याची क्षेत्रीय माहिती (Live Telemetry):**\n• **सरासरी २४ तासांचा पाऊस:** **${avgRain} mm**\n• **मातीचा ओलावा:** **${avgSoil}%**\n• **सर्वाधिक धोकादायक क्षेत्र:** **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\nतुम्ही कोणत्याही क्षेत्राविषयी किंवा सुरक्षेविषयी अधिक प्रश्न विचारू शकता.`;
+    } else if (effectiveLang !== "en") {
+      message = `💡 **AI Assistant (${langMeta.name} - ${langMeta.nativeName}):**\n\n${subjectAnswerEn}\n\n**Live Sector Telemetry:**\n• **Regional Average 24h Rain:** **${avgRain} mm**\n• **Subsurface Soil Saturation:** **${avgSoil}%**\n• **Peak Monitored Risk Zone:** **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\n*(Connect Google Gemini in settings for fluent generative conversational answers in ${langMeta.name})*`;
+    } else {
+      message = `💡 **AI Assistant Response:**\n\n${subjectAnswerEn}\n\n**Current Live Environmental Telemetry:**\n• **Regional Average 24h Rain:** **${avgRain} mm**\n• **Mean Subsurface Soil Moisture:** **${avgSoil}%**\n• **Highest Monitored Sector:** **${highestRiskLoc.name} (${highestRiskLoc.risk_probability}%)**\n\nFeel free to explore live sensor layers, active bulletins, or ask about any specific location or geotechnical topic!`;
+    }
 
     return {
       message: message,
       intent: `ADAPTIVE_${detectedTopic}`,
-      sources: ["Landslide Early Warning Knowledge Base", "Live Regional Telemetry"],
+      sources: ["Landslide Early Warning Knowledge Base", `${langMeta.name} Regional Telemetry`],
       actionButtons: [
         { label: "🗺️ View Live Risk Map", action: "VIEW_MAP" },
         { label: "⚠️ View Active Alerts", action: "VIEW_ALERTS" },
         { label: "📡 View Environmental Data", action: "VIEW_ENVIRONMENT" },
         { label: "🧠 Open AI Prediction Model", action: "VIEW_PREDICTION" }
       ],
-      suggestedQuestions: [
-        "What is the current risk?",
-        "What causes a landslide?",
-        "What are the warning signs?",
-        "How to prevent landslides?"
-      ],
+      suggestedQuestions: (this.quickQuestions[effectiveLang] || this.quickQuestions["en"]).slice(0, 4),
       isDemoMode: true
     };
   },

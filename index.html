@@ -1588,8 +1588,29 @@
               <div class="chatbot-meta-block">
                 <div class="chatbot-meta-title">Language Selection</div>
                 <select class="role-select chatbot-lang-select" style="width: 100%;" onchange="LandslideAIChatbot.setLanguage(this.value)">
-                  <option value="en">English (US/IN)</option>
+                  <option value="en">English (India)</option>
+                  <option value="hi">हिन्दी (Hindi)</option>
                   <option value="ta">தமிழ் (Tamil)</option>
+                  <option value="te">తెలుగు (Telugu)</option>
+                  <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                  <option value="ml">മലയാളം (Malayalam)</option>
+                  <option value="bn">বাংলা (Bengali)</option>
+                  <option value="mr">मराठी (Marathi)</option>
+                  <option value="gu">ગુજરાતી (Gujarati)</option>
+                  <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                  <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                  <option value="as">অসমীয়া (Assamese)</option>
+                  <option value="ur">اردو (Urdu)</option>
+                  <option value="ne">नेपाली (Nepali - Sikkim/Darjeeling)</option>
+                  <option value="kok">कोंकणी (Konkani - Western Ghats)</option>
+                  <option value="ks">كٲشُر (Kashmiri - J&K)</option>
+                  <option value="doi">डोगरी (Dogri - J&K)</option>
+                  <option value="sa">संस्कृतम् (Sanskrit)</option>
+                  <option value="mai">मैथिली (Maithili)</option>
+                  <option value="mni">মৈতৈলোন্ (Manipuri - Northeast)</option>
+                  <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
+                  <option value="brx">बड़ो (Bodo - Assam)</option>
+                  <option value="sd">سنڌي (Sindhi)</option>
                 </select>
               </div>
 
@@ -1641,9 +1662,30 @@
                     <div class="online-status-dot"></div>
                     <span>Online</span>
                   </div>
-                  <select class="role-select chatbot-lang-select" style="padding: 3px 8px; font-size: 0.75rem;" onchange="LandslideAIChatbot.setLanguage(this.value)">
+                  <select class="role-select chatbot-lang-select" style="padding: 3px 8px; font-size: 0.75rem; max-width: 140px;" onchange="LandslideAIChatbot.setLanguage(this.value)" title="Choose Language">
                     <option value="en">English</option>
-                    <option value="ta">தமிழ்</option>
+                    <option value="hi">हिन्दी (Hindi)</option>
+                    <option value="ta">தமிழ் (Tamil)</option>
+                    <option value="te">తెలుగు (Telugu)</option>
+                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                    <option value="ml">മലയാളം (Malayalam)</option>
+                    <option value="bn">বাংলা (Bengali)</option>
+                    <option value="mr">मराठी (Marathi)</option>
+                    <option value="gu">ગુજરાતી (Gujarati)</option>
+                    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                    <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                    <option value="as">অসমীয়া (Assamese)</option>
+                    <option value="ur">اردو (Urdu)</option>
+                    <option value="ne">नेपाली (Nepali)</option>
+                    <option value="kok">कोंकणी (Konkani)</option>
+                    <option value="ks">كٲشُر (Kashmiri)</option>
+                    <option value="doi">डोगरी (Dogri)</option>
+                    <option value="sa">संस्कृतम् (Sanskrit)</option>
+                    <option value="mai">मैथिली (Maithili)</option>
+                    <option value="mni">মৈতৈলোন্ (Manipuri)</option>
+                    <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
+                    <option value="brx">बड़ो (Bodo)</option>
+                    <option value="sd">سنڌي (Sindhi)</option>
                   </select>
                   <button class="btn btn-secondary btn-sm" onclick="LandslideAIChatbot.clearChat()" title="Clear conversation" style="font-size: 0.75rem; padding: 4px 8px;">
                     🗑️ Clear
@@ -1720,6 +1762,31 @@
         </div>
       </div>
       <div style="display: flex; align-items: center; gap: 4px;">
+        <select class="role-select chatbot-lang-select" style="padding: 2px 4px; font-size: 0.7rem; max-width: 95px; border-radius: 6px;" onchange="LandslideAIChatbot.setLanguage(this.value)" title="Choose Language">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+          <option value="ta">தமிழ்</option>
+          <option value="te">తెలుగు</option>
+          <option value="kn">ಕನ್ನಡ</option>
+          <option value="ml">മലയാളം</option>
+          <option value="bn">বাংলা</option>
+          <option value="mr">मराठी</option>
+          <option value="gu">ગુજરાતી</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="or">ଓଡ଼ିଆ</option>
+          <option value="as">অসমীয়া</option>
+          <option value="ur">اردو</option>
+          <option value="ne">नेपाली</option>
+          <option value="kok">कोंकणी</option>
+          <option value="ks">كٲشُر</option>
+          <option value="doi">डोगरी</option>
+          <option value="sa">संस्कृतम्</option>
+          <option value="mai">मैथिली</option>
+          <option value="mni">মৈতৈলোন্</option>
+          <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ</option>
+          <option value="brx">बड़ो</option>
+          <option value="sd">سنڌي</option>
+        </select>
         <button onclick="LandslideApp.navigateTo('chatbot'); LandslideAIChatbot.closeFloatingDrawer();" style="background:none; border:none; font-size:0.9rem; cursor:pointer; padding:4px;" title="Expand to full page">⛶</button>
         <button onclick="LandslideAIChatbot.clearChat()" style="background:none; border:none; font-size:0.9rem; cursor:pointer; padding:4px;" title="Clear chat">🗑️</button>
         <button onclick="LandslideAIChatbot.closeFloatingDrawer()" style="background:none; border:none; font-size:1.1rem; cursor:pointer; padding:4px;" title="Close">✕</button>
