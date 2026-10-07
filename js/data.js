@@ -719,6 +719,19 @@ const LANDSLIDE_APP_DATA = {
       recommended_action: "Maintain drainage trenches along boundary paths.",
       status: "RESOLVED",
       timestamp: "6 hours ago"
+    },
+    {
+      id: "ALT-2026-071",
+      location_id: "LOC-06",
+      location_name: "Kodaikanal Ghat Road (SH-156)",
+      district: "Dindigul",
+      alert_level: "WARNING",
+      risk_probability_pct: 38.5,
+      headline: "RESOLVED: Hill Cutting Slope Slump Cleared & Restabilized",
+      trigger_reason: "Rainfall subsided below critical threshold. Retaining structures and drainage channels inspected.",
+      recommended_action: "Debris cleared by state highway engineering division. Normal two-way traffic safely restored.",
+      status: "RESOLVED",
+      timestamp: "14 hours ago"
     }
   ],
 

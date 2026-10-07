@@ -405,6 +405,34 @@
   border-bottom-color: var(--primary);
 }
 
+.tab-count {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 700;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.tab-btn.active .tab-count {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.alert-card.RESOLVED {
+  border-left-color: #10b981;
+  background-color: #f8fafc;
+}
+
+.risk-badge.RESOLVED {
+  background-color: var(--risk-low-bg);
+  color: var(--risk-low-text);
+  border: 1px solid var(--risk-low-border);
+}
+
 /* Modals */
 .modal-overlay {
   position: fixed;

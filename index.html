@@ -1345,14 +1345,22 @@
             </div>
           </div>
 
-          <div class="tabs-nav">
-            <button class="tab-btn active" onclick="EarlyWarningSystem.renderAlertFeed('ALL')">All Alerts</button>
-            <button class="tab-btn" onclick="EarlyWarningSystem.renderAlertFeed('ACTIVE')">Active Warnings</button>
-            <button class="tab-btn" onclick="EarlyWarningSystem.renderAlertFeed('CRITICAL')">Critical Red Alerts</button>
-            <button class="tab-btn" onclick="EarlyWarningSystem.renderAlertFeed('RESOLVED')">Resolved</button>
+          <div class="tabs-nav" id="alerts-tabs-nav">
+            <button class="tab-btn active" data-filter="ALL" onclick="EarlyWarningSystem.renderAlertFeed('ALL')">
+              All Alerts <span class="tab-count" id="count-alerts-all"></span>
+            </button>
+            <button class="tab-btn" data-filter="ACTIVE" onclick="EarlyWarningSystem.renderAlertFeed('ACTIVE')">
+              Active Warnings <span class="tab-count" id="count-alerts-active"></span>
+            </button>
+            <button class="tab-btn" data-filter="CRITICAL" onclick="EarlyWarningSystem.renderAlertFeed('CRITICAL')">
+              Critical Red Alerts <span class="tab-count" id="count-alerts-critical"></span>
+            </button>
+            <button class="tab-btn" data-filter="RESOLVED" onclick="EarlyWarningSystem.renderAlertFeed('RESOLVED')">
+              Resolved <span class="tab-count" id="count-alerts-resolved"></span>
+            </button>
           </div>
 
-          <div id="alerts-feed-container"></div>
+          <div id="alerts-feed-container" style="padding-bottom: 2rem;"></div>
         </section>
 
         <!-- ================================================================== -->
