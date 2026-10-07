@@ -6,10 +6,13 @@
 const LandslideCharts = {
   instances: {},
 
-  initEnvironmentalCharts(timeframe = "24h") {
-    this.renderRainfallChart(timeframe);
-    this.renderSoilMoistureChart(timeframe);
-    this.renderAtmosphericChart(timeframe);
+  initEnvironmentalCharts(timeframe = "24h", loc = null) {
+    if (!loc && typeof LandslideApp !== "undefined" && LandslideApp.getSelectedLocation) {
+      loc = LandslideApp.getSelectedLocation();
+    }
+    this.renderRainfallChart(timeframe, loc);
+    this.renderSoilMoistureChart(timeframe, loc);
+    this.renderAtmosphericChart(timeframe, loc);
   },
 
   destroyChart(id) {
@@ -19,24 +22,60 @@ const LandslideCharts = {
     }
   },
 
-  renderRainfallChart(timeframe = "24h") {
+  renderRainfallChart(timeframe = "24h", loc = null) {
     const ctx = document.getElementById("chart-rainfall");
     if (!ctx) return;
     this.destroyChart("rainfall");
+    if (typeof Chart !== "undefined" && Chart.getChart) {
+      const existing = Chart.getChart(ctx);
+      if (existing) existing.destroy();
+    }
 
-    let labels, dataHourly, dataCumulative;
+    if (!loc && typeof LandslideApp !== "undefined" && LandslideApp.getSelectedLocation) {
+      loc = LandslideApp.getSelectedLocation();
+    }
+
+    let labels, dataHourly, dataCumulative, yTitle, y1Title;
+    const rain24 = loc && loc.rainfall_24h_mm ? loc.rainfall_24h_mm : 162;
+    const rain7d = loc && loc.rainfall_7d_mm ? loc.rainfall_7d_mm : 412;
+    const rain30d = Math.round(rain7d * 2.8);
+
     if (timeframe === "24h") {
       labels = ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "Now"];
-      dataHourly = [12, 28, 45, 62, 38, 55, 48];
-      dataCumulative = [12, 40, 85, 147, 185, 240, 288];
+      const factors = [0.07, 0.14, 0.22, 0.24, 0.15, 0.11, 0.07];
+      let running = 0;
+      dataHourly = factors.map(f => Math.round(rain24 * f * 10) / 10);
+      dataCumulative = dataHourly.map(v => {
+        running = Math.round((running + v) * 10) / 10;
+        return running;
+      });
+      dataCumulative[dataCumulative.length - 1] = rain24;
+      yTitle = "Hourly Precipitation (mm)";
+      y1Title = "24h Cumulative (mm)";
     } else if (timeframe === "7d") {
       labels = ["Day -6", "Day -5", "Day -4", "Day -3", "Day -2", "Yesterday", "Today"];
-      dataHourly = [45, 62, 98, 142, 178, 162, 185];
-      dataCumulative = [45, 107, 205, 347, 525, 687, 872];
-    } else {
-      labels = ["Wk 1", "Wk 2", "Wk 3", "Wk 4"];
-      dataHourly = [180, 240, 420, 310];
-      dataCumulative = [180, 420, 840, 1150];
+      const factors = [0.08, 0.11, 0.15, 0.18, 0.22, 0.14, 0.12];
+      let running = 0;
+      dataHourly = factors.map(f => Math.round(rain7d * f * 10) / 10);
+      dataCumulative = dataHourly.map(v => {
+        running = Math.round((running + v) * 10) / 10;
+        return running;
+      });
+      dataCumulative[dataCumulative.length - 1] = rain7d;
+      yTitle = "Daily Precipitation (mm)";
+      y1Title = "7d Cumulative (mm)";
+    } else { // 30d
+      labels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+      const factors = [0.18, 0.25, 0.35, 0.22];
+      let running = 0;
+      dataHourly = factors.map(f => Math.round(rain30d * f));
+      dataCumulative = dataHourly.map(v => {
+        running += v;
+        return running;
+      });
+      dataCumulative[dataCumulative.length - 1] = rain30d;
+      yTitle = "Weekly Precipitation (mm)";
+      y1Title = "30d Cumulative (mm)";
     }
 
     this.instances["rainfall"] = new Chart(ctx, {
@@ -45,19 +84,20 @@ const LandslideCharts = {
         labels: labels,
         datasets: [
           {
-            label: "Precipitation (mm)",
+            label: timeframe === "30d" ? "Weekly Precipitation (mm)" : (timeframe === "7d" ? "Daily Precipitation (mm)" : "Precipitation (mm)"),
             data: dataHourly,
             backgroundColor: "#3b82f6",
             borderRadius: 4,
             yAxisID: "y"
           },
           {
-            label: "Cumulative (mm)",
+            label: "Cumulative Total (mm)",
             data: dataCumulative,
             type: "line",
             borderColor: "#1e40af",
-            borderWidth: 2,
+            borderWidth: 2.5,
             pointBackgroundColor: "#1e40af",
+            pointRadius: 4,
             fill: false,
             tension: 0.3,
             yAxisID: "y1"
@@ -72,12 +112,12 @@ const LandslideCharts = {
         },
         scales: {
           y: {
-            title: { display: true, text: "Precipitation (mm)" },
+            title: { display: true, text: yTitle },
             grid: { color: "#f1f5f9" }
           },
           y1: {
             position: "right",
-            title: { display: true, text: "Cumulative Total (mm)" },
+            title: { display: true, text: y1Title },
             grid: { drawOnChartArea: false }
           },
           x: { grid: { display: false } }
@@ -86,12 +126,83 @@ const LandslideCharts = {
     });
   },
 
-  renderSoilMoistureChart(timeframe = "24h") {
+  renderSoilMoistureChart(timeframe = "24h", loc = null) {
     const ctx = document.getElementById("chart-soil-moisture");
     if (!ctx) return;
     this.destroyChart("soil");
+    if (typeof Chart !== "undefined" && Chart.getChart) {
+      const existing = Chart.getChart(ctx);
+      if (existing) existing.destroy();
+    }
 
-    const labels = ["T-18h", "T-15h", "T-12h", "T-9h", "T-6h", "T-3h", "Current"];
+    if (!loc && typeof LandslideApp !== "undefined" && LandslideApp.getSelectedLocation) {
+      loc = LandslideApp.getSelectedLocation();
+    }
+
+    const curSoil = loc && loc.soil_moisture_pct ? loc.soil_moisture_pct : 88;
+    const curPore = loc && loc.pore_pressure_kpa ? loc.pore_pressure_kpa : 58.6;
+
+    let labels, dataSoil, dataPore, threshold;
+
+    if (timeframe === "24h") {
+      labels = ["T-18h", "T-15h", "T-12h", "T-9h", "T-6h", "T-3h", "Current"];
+      dataSoil = [
+        Math.max(10, Math.round((curSoil - 36) * 10) / 10),
+        Math.max(15, Math.round((curSoil - 30) * 10) / 10),
+        Math.max(20, Math.round((curSoil - 21) * 10) / 10),
+        Math.max(25, Math.round((curSoil - 13) * 10) / 10),
+        Math.max(30, Math.round((curSoil - 6) * 10) / 10),
+        Math.max(30, Math.round((curSoil - 1.5) * 10) / 10),
+        curSoil
+      ];
+      dataPore = [
+        Math.max(5, Math.round((curPore - 38) * 10) / 10),
+        Math.max(8, Math.round((curPore - 34) * 10) / 10),
+        Math.max(12, Math.round((curPore - 26) * 10) / 10),
+        Math.max(15, Math.round((curPore - 16) * 10) / 10),
+        Math.max(18, Math.round((curPore - 8) * 10) / 10),
+        Math.max(20, Math.round((curPore - 2) * 10) / 10),
+        curPore
+      ];
+      threshold = [75, 75, 75, 75, 75, 75, 75];
+    } else if (timeframe === "7d") {
+      labels = ["Day -6", "Day -5", "Day -4", "Day -3", "Day -2", "Yesterday", "Today"];
+      dataSoil = [
+        Math.max(10, Math.round((curSoil - 42) * 10) / 10),
+        Math.max(15, Math.round((curSoil - 35) * 10) / 10),
+        Math.max(20, Math.round((curSoil - 26) * 10) / 10),
+        Math.max(25, Math.round((curSoil - 18) * 10) / 10),
+        Math.max(30, Math.round((curSoil - 11) * 10) / 10),
+        Math.max(35, Math.round((curSoil - 4) * 10) / 10),
+        curSoil
+      ];
+      dataPore = [
+        Math.max(5, Math.round((curPore - 42) * 10) / 10),
+        Math.max(8, Math.round((curPore - 36) * 10) / 10),
+        Math.max(12, Math.round((curPore - 28) * 10) / 10),
+        Math.max(15, Math.round((curPore - 19) * 10) / 10),
+        Math.max(18, Math.round((curPore - 11) * 10) / 10),
+        Math.max(20, Math.round((curPore - 4) * 10) / 10),
+        curPore
+      ];
+      threshold = [75, 75, 75, 75, 75, 75, 75];
+    } else { // 30d
+      labels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+      dataSoil = [
+        Math.max(10, Math.round((curSoil - 45) * 10) / 10),
+        Math.max(18, Math.round((curSoil - 30) * 10) / 10),
+        Math.max(25, Math.round((curSoil - 14) * 10) / 10),
+        curSoil
+      ];
+      dataPore = [
+        Math.max(5, Math.round((curPore - 44) * 10) / 10),
+        Math.max(10, Math.round((curPore - 31) * 10) / 10),
+        Math.max(15, Math.round((curPore - 15) * 10) / 10),
+        curPore
+      ];
+      threshold = [75, 75, 75, 75];
+    }
+
     this.instances["soil"] = new Chart(ctx, {
       type: "line",
       data: {
@@ -99,23 +210,25 @@ const LandslideCharts = {
         datasets: [
           {
             label: "Topsoil Saturation (0-10cm) %",
-            data: [52, 58, 67, 75, 82, 88, 91.5],
+            data: dataSoil,
             borderColor: "#0284c7",
             backgroundColor: "rgba(2, 132, 199, 0.1)",
             fill: true,
-            tension: 0.4
+            tension: 0.4,
+            pointRadius: 4
           },
           {
             label: "Pore-Water Pressure (kPa)",
-            data: [18, 22, 31, 42, 53, 61, 64.8],
+            data: dataPore,
             borderColor: "#d97706",
             borderDash: [5, 5],
             fill: false,
-            tension: 0.4
+            tension: 0.4,
+            pointRadius: 4
           },
           {
             label: "Critical Instability Threshold",
-            data: [75, 75, 75, 75, 75, 75, 75],
+            data: threshold,
             borderColor: "#ef4444",
             borderWidth: 1.5,
             pointRadius: 0,
@@ -138,27 +251,98 @@ const LandslideCharts = {
     });
   },
 
-  renderAtmosphericChart(timeframe = "24h") {
+  renderAtmosphericChart(timeframe = "24h", loc = null) {
     const ctx = document.getElementById("chart-atmospheric");
     if (!ctx) return;
     this.destroyChart("atmospheric");
+    if (typeof Chart !== "undefined" && Chart.getChart) {
+      const existing = Chart.getChart(ctx);
+      if (existing) existing.destroy();
+    }
+
+    if (!loc && typeof LandslideApp !== "undefined" && LandslideApp.getSelectedLocation) {
+      loc = LandslideApp.getSelectedLocation();
+    }
+
+    const curHum = loc && loc.humidity_pct ? loc.humidity_pct : 96;
+    const curTemp = loc && loc.temperature_c ? loc.temperature_c : 19.1;
+
+    let labels, dataHum, dataTemp;
+
+    if (timeframe === "24h") {
+      labels = ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "Now"];
+      dataHum = [
+        Math.max(40, curHum - 10),
+        Math.max(40, curHum - 6),
+        Math.max(40, curHum - 2),
+        curHum,
+        Math.max(40, curHum - 1),
+        Math.max(40, curHum - 2),
+        curHum
+      ];
+      dataTemp = [
+        Math.round((curTemp - 3.5) * 10) / 10,
+        Math.round((curTemp - 4.2) * 10) / 10,
+        Math.round((curTemp - 2.0) * 10) / 10,
+        Math.round((curTemp + 1.5) * 10) / 10,
+        Math.round((curTemp + 0.5) * 10) / 10,
+        Math.round((curTemp - 1.2) * 10) / 10,
+        curTemp
+      ];
+    } else if (timeframe === "7d") {
+      labels = ["Day -6", "Day -5", "Day -4", "Day -3", "Day -2", "Yesterday", "Today"];
+      dataHum = [
+        Math.max(40, curHum - 18),
+        Math.max(40, curHum - 15),
+        Math.max(40, curHum - 11),
+        Math.max(40, curHum - 7),
+        Math.max(40, curHum - 4),
+        Math.max(40, curHum - 1),
+        curHum
+      ];
+      dataTemp = [
+        Math.round((curTemp + 3.2) * 10) / 10,
+        Math.round((curTemp + 2.5) * 10) / 10,
+        Math.round((curTemp + 1.8) * 10) / 10,
+        Math.round((curTemp + 0.8) * 10) / 10,
+        Math.round((curTemp + 0.2) * 10) / 10,
+        Math.round((curTemp - 0.4) * 10) / 10,
+        curTemp
+      ];
+    } else { // 30d
+      labels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+      dataHum = [
+        Math.max(40, curHum - 22),
+        Math.max(40, curHum - 14),
+        Math.max(40, curHum - 6),
+        curHum
+      ];
+      dataTemp = [
+        Math.round((curTemp + 4.5) * 10) / 10,
+        Math.round((curTemp + 3.0) * 10) / 10,
+        Math.round((curTemp + 1.2) * 10) / 10,
+        curTemp
+      ];
+    }
 
     this.instances["atmospheric"] = new Chart(ctx, {
       type: "line",
       data: {
-        labels: ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "Now"],
+        labels: labels,
         datasets: [
           {
             label: "Relative Humidity (%)",
-            data: [88, 92, 95, 98, 97, 96, 98],
+            data: dataHum,
             borderColor: "#06b6d4",
-            tension: 0.3
+            tension: 0.3,
+            pointRadius: 4
           },
           {
             label: "Ambient Temp (°C)",
-            data: [15, 14, 16, 19, 18, 17, 16.8],
+            data: dataTemp,
             borderColor: "#f97316",
-            tension: 0.3
+            tension: 0.3,
+            pointRadius: 4
           }
         ]
       },

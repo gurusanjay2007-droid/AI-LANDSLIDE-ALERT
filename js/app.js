@@ -7,6 +7,7 @@ const LandslideApp = {
   currentView: "landing",
   currentLocationId: "LOC-02", // Default to Coonoor Ghat Corridor (Critical Demo)
   currentRole: "DISASTER_MANAGER",
+  currentEnvTimeframe: "24h",
   autoRefreshInterval: null,
   countdownSeconds: 300,
 
@@ -105,8 +106,8 @@ const LandslideApp = {
       this.renderLocationAnalysis(loc);
     } else if (viewName === "environment") {
       setTimeout(() => {
-        LandslideCharts.initEnvironmentalCharts("24h");
-        this.renderEnvironmentalStatus(loc);
+        LandslideCharts.initEnvironmentalCharts(this.currentEnvTimeframe || "24h", loc);
+        this.renderEnvironmentalStatus(loc, this.currentEnvTimeframe || "24h");
       }, 50);
     } else if (viewName === "prediction") {
       this.renderAIPredictionPage(loc);
@@ -151,7 +152,8 @@ const LandslideApp = {
     } else if (this.currentView === "trends") {
       this.renderRiskTrendsPage(loc);
     } else if (this.currentView === "environment") {
-      this.renderEnvironmentalStatus(loc);
+      this.renderEnvironmentalStatus(loc, this.currentEnvTimeframe || "24h");
+      LandslideCharts.initEnvironmentalCharts(this.currentEnvTimeframe || "24h", loc);
     }
   },
 
@@ -247,12 +249,54 @@ const LandslideApp = {
     document.getElementById("spec-history-count").textContent = `${loc.historical_incidents} Events`;
   },
 
-  renderEnvironmentalStatus(loc) {
-    document.getElementById("env-loc-name").textContent = loc.name;
-    document.getElementById("env-rain-val").textContent = `${loc.rainfall_24h_mm} mm`;
-    document.getElementById("env-soil-val").textContent = `${loc.soil_moisture_pct}%`;
-    document.getElementById("env-pore-val").textContent = `${loc.pore_pressure_kpa} kPa`;
-    document.getElementById("env-vibe-val").textContent = `${loc.ground_vibration_mms} mm/s`;
+  switchEnvironmentalTimeframe(timeframe) {
+    this.currentEnvTimeframe = timeframe;
+    const loc = this.getSelectedLocation();
+
+    // Toggle active tab buttons
+    document.querySelectorAll("#env-timeframe-tabs .tab-btn").forEach(btn => {
+      if (btn.getAttribute("data-timeframe") === timeframe) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    // Re-render KPI metrics for timeframe
+    this.renderEnvironmentalStatus(loc, timeframe);
+
+    // Re-render all 3 environmental charts
+    LandslideCharts.initEnvironmentalCharts(timeframe, loc);
+  },
+
+  renderEnvironmentalStatus(loc, timeframe = "24h") {
+    if (!loc) loc = this.getSelectedLocation();
+    const locNameEl = document.getElementById("env-loc-name");
+    if (locNameEl) locNameEl.textContent = loc.name;
+
+    const rainLabelEl = document.getElementById("env-rain-label");
+    const rainValEl = document.getElementById("env-rain-val");
+
+    if (timeframe === "7d") {
+      if (rainLabelEl) rainLabelEl.textContent = "7D CUMULATIVE PRECIPITATION";
+      if (rainValEl) rainValEl.textContent = `${loc.rainfall_7d_mm} mm`;
+    } else if (timeframe === "30d") {
+      if (rainLabelEl) rainLabelEl.textContent = "30D CUMULATIVE PRECIPITATION";
+      const total30d = Math.round(loc.rainfall_7d_mm * 2.8);
+      if (rainValEl) rainValEl.textContent = `${total30d.toLocaleString()} mm`;
+    } else {
+      if (rainLabelEl) rainLabelEl.textContent = "24H PRECIPITATION";
+      if (rainValEl) rainValEl.textContent = `${loc.rainfall_24h_mm} mm`;
+    }
+
+    const soilValEl = document.getElementById("env-soil-val");
+    if (soilValEl) soilValEl.textContent = `${loc.soil_moisture_pct}%`;
+
+    const poreValEl = document.getElementById("env-pore-val");
+    if (poreValEl) poreValEl.textContent = `${loc.pore_pressure_kpa} kPa`;
+
+    const vibeValEl = document.getElementById("env-vibe-val");
+    if (vibeValEl) vibeValEl.textContent = `${loc.ground_vibration_mms} mm/s`;
   },
 
   renderAIPredictionPage(loc) {

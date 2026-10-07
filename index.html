@@ -575,10 +575,10 @@
               <p>Continuous data feeds from AWS weather stations, Doppler precipitation radars, and subsurface sensors.</p>
             </div>
             <div class="page-actions">
-              <div class="tabs-nav" style="margin-bottom: 0;">
-                <button class="tab-btn active" onclick="LandslideCharts.initEnvironmentalCharts('24h')">Last 24 Hours</button>
-                <button class="tab-btn" onclick="LandslideCharts.initEnvironmentalCharts('7d')">Last 7 Days</button>
-                <button class="tab-btn" onclick="LandslideCharts.initEnvironmentalCharts('30d')">Last 30 Days</button>
+              <div class="tabs-nav" id="env-timeframe-tabs" style="margin-bottom: 0;">
+                <button class="tab-btn active" data-timeframe="24h" onclick="LandslideApp.switchEnvironmentalTimeframe('24h')">Last 24 Hours</button>
+                <button class="tab-btn" data-timeframe="7d" onclick="LandslideApp.switchEnvironmentalTimeframe('7d')">Last 7 Days</button>
+                <button class="tab-btn" data-timeframe="30d" onclick="LandslideApp.switchEnvironmentalTimeframe('30d')">Last 30 Days</button>
               </div>
             </div>
           </div>
@@ -589,7 +589,7 @@
               <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-top: 2px;" id="env-loc-name">Coonoor Corridor</div>
             </div>
             <div class="kpi-card kpi-high">
-              <div class="kpi-label">24H PRECIPITATION</div>
+              <div class="kpi-label" id="env-rain-label">24H PRECIPITATION</div>
               <div class="kpi-number" style="font-size: 1.4rem; color: #1e40af;" id="env-rain-val">162 mm</div>
             </div>
             <div class="kpi-card kpi-high">
