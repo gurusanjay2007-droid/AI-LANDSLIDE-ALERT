@@ -283,21 +283,26 @@ const LandslideApp = {
   },
 
   renderRiskTrendsPage(loc) {
-    document.getElementById("trend-location-name").textContent = `${loc.name} (${loc.district})`;
+    const locNameEl = document.getElementById("trend-location-name");
+    if (locNameEl) locNameEl.textContent = `${loc.name} (${loc.district})`;
+
     const evalData = LandslideAIEngine.calculate(loc);
     const traj = evalData.trendTrajectory;
 
-    document.getElementById("trend-val-past").textContent = `${traj.past_24h}%`;
-    document.getElementById("trend-val-now").textContent = `${traj.current}%`;
-    document.getElementById("trend-val-6h").textContent = `${traj.forecast_6h}%`;
-    document.getElementById("trend-val-24h").textContent = `${traj.forecast_24h}%`;
-    document.getElementById("trend-val-7d").textContent = `${traj.forecast_7d}%`;
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    };
+
+    setVal("trend-val-past", `${traj.past_24h}%`);
+    setVal("trend-val-now", `${traj.current}%`);
+    setVal("trend-val-6h", `${traj.forecast_6h}%`);
+    setVal("trend-val-24h", `${traj.forecast_24h}%`);
+    setVal("trend-val-7d", `${traj.forecast_7d}%`);
 
     const trendIndicator = document.getElementById("trend-increasing-badge");
-    if (evalData.isIncreasing) {
-      trendIndicator.style.display = "inline-flex";
-    } else {
-      trendIndicator.style.display = "none";
+    if (trendIndicator) {
+      trendIndicator.style.display = evalData.isIncreasing ? "inline-flex" : "none";
     }
 
     setTimeout(() => {

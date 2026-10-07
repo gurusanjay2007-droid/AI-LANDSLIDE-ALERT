@@ -731,7 +731,7 @@
           </div>
 
           <!-- Forecast Metric Pills -->
-          <div class="grid-cols-4" style="margin-bottom: 1.25rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
             <div class="kpi-card">
               <div class="kpi-label">PAST 24 HOURS</div>
               <div class="kpi-number" id="trend-val-past" style="font-size: 1.4rem;">71.5%</div>
@@ -751,6 +751,11 @@
               <div class="kpi-label">PREDICTED IN 24H</div>
               <div class="kpi-number" id="trend-val-24h" style="font-size: 1.4rem; color: #991b1b;">94.8%</div>
               <div class="kpi-subtext">Sustained debris hazard</div>
+            </div>
+            <div class="kpi-card kpi-high">
+              <div class="kpi-label">PREDICTED IN 7D</div>
+              <div class="kpi-number" id="trend-val-7d" style="font-size: 1.4rem; color: #991b1b;">92.0%</div>
+              <div class="kpi-subtext">Extended monsoon window</div>
             </div>
           </div>
 
@@ -1425,6 +1430,128 @@
             <!-- Active Stage Deep-Dive Card -->
             <div>
               <div id="workflow-detail-display" style="position: sticky; top: 80px;"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- VIEW 11: SYSTEM & GEE HEALTH (ADMIN) -->
+        <!-- ================================================================== -->
+        <section id="view-admin" class="view-section" style="display: none;">
+          <div class="page-title-banner">
+            <div>
+              <h2>⚙️ System Diagnostics & GEE Pipeline Operations</h2>
+              <p>Real-time operational monitoring for Google Earth Engine, IMD Doppler radars, ground IoT telemetry, and AI inference latency.</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-secondary btn-sm" onclick="LandslideApp.refreshLiveData()">
+                <span>🔄 Ping All Feeds</span>
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="ExportUtils.downloadCSV()">
+                <span>📥 Export Diagnostic Logs</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Top Status KPIs -->
+          <div class="grid-cols-4" style="margin-bottom: 1.5rem;">
+            <div class="card" style="padding: 1rem 1.25rem; border-left: 4px solid #10b981;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Overall System Status</div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                <span class="status-dot" style="background: #10b981;"></span>
+                <span style="font-size: 1.25rem; font-weight: 800; color: #0f172a;">100% Operational</span>
+              </div>
+              <div style="font-size: 0.725rem; color: #64748b; margin-top: 4px;">Uptime: 99.98% (Last 30 Days)</div>
+            </div>
+
+            <div class="card" style="padding: 1rem 1.25rem; border-left: 4px solid #0284c7;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Earth Engine Pipeline</div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                <span style="font-size: 1.25rem; font-weight: 800; color: #0284c7;">Active • 42 ms</span>
+              </div>
+              <div style="font-size: 0.725rem; color: #64748b; margin-top: 4px;">Sentinel-1 InSAR + SRTM Ingested</div>
+            </div>
+
+            <div class="card" style="padding: 1rem 1.25rem; border-left: 4px solid #f59e0b;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Active Ground Sensors</div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                <span style="font-size: 1.25rem; font-weight: 800; color: #0f172a;">18 Telemetry Hubs</span>
+              </div>
+              <div style="font-size: 0.725rem; color: #64748b; margin-top: 4px;">TDR Probes & Piezometers Live</div>
+            </div>
+
+            <div class="card" style="padding: 1rem 1.25rem; border-left: 4px solid #8b5cf6;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">AI Inference Pipeline</div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                <span style="font-size: 1.25rem; font-weight: 800; color: #8b5cf6;">12 ms Latency</span>
+              </div>
+              <div style="font-size: 0.725rem; color: #64748b; margin-top: 4px;">Ensemble Susceptibility Scoring</div>
+            </div>
+          </div>
+
+          <!-- Data Pipelines Grid -->
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 class="card-title">📡 Subsystem Telemetry Feeds & External APIs</h3>
+                <p style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">Real-time handshake status across Earth observation pipelines, meteorological Doppler radar, and disaster early warning relays.</p>
+              </div>
+              <span class="badge-status" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 9999px;">
+                ● 6 / 6 Connected
+              </span>
+            </div>
+            <!-- Dynamic Data Sources Container populated by app.js renderAdminHealthPage() -->
+            <div id="admin-datasources-grid" class="grid-cols-3" style="margin-top: 1rem;"></div>
+          </div>
+
+          <!-- Infrastructure & Security Specifications -->
+          <div class="grid-cols-2" style="gap: 1.25rem; margin-bottom: 1.5rem;">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">🛰️ Google Earth Engine (GEE) Environment Configuration</h3>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.825rem;">
+                <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9;">
+                  <span style="color: #64748b;">GEE Project Account:</span>
+                  <span style="font-weight: 600; color: #0f172a;">gee-landslide-earlywarning-prod</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9;">
+                  <span style="color: #64748b;">Copernicus Sentinel-1 InSAR Cadence:</span>
+                  <span style="font-weight: 600; color: #0f172a;">12-Day Ascending / Descending Pass</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9;">
+                  <span style="color: #64748b;">NASA SRTM Digital Elevation Resolution:</span>
+                  <span style="font-weight: 600; color: #0f172a;">30m Spatial Grid (1 Arc-Second)</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: #64748b;">Earth Engine Spatial Reducer:</span>
+                  <span style="font-weight: 600; color: #0f172a;">ee.Reducer.mean() / slope gradient</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">🛡️ Security, Governance & Alert Dispatch Controls</h3>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.825rem;">
+                <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9;">
+                  <span style="color: #64748b;">Active RBAC Session:</span>
+                  <span style="font-weight: 600; color: #1e40af;">DISASTER_MANAGER / SYSTEM_ADMIN</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9;">
+                  <span style="color: #64748b;">CAP-IN Dispatch Protocol:</span>
+                  <span style="font-weight: 600; color: #0f172a;">OASIS CAP v1.2 / NDMA Compliant</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9;">
+                  <span style="color: #64748b;">Automated Cache Cycle:</span>
+                  <span style="font-weight: 600; color: #0f172a;">5-minute Live Rolling Telemetry</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: #64748b;">Disaster Notification Relay:</span>
+                  <span style="font-weight: 600; color: #10b981;">SMS Gateway & Sirens Active</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>

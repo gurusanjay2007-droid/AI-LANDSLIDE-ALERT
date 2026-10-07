@@ -177,9 +177,14 @@ const LandslideCharts = {
     const ctx = document.getElementById("chart-risk-trend-trajectory");
     if (!ctx) return;
     this.destroyChart("riskTrend");
+    if (typeof Chart !== "undefined" && Chart.getChart) {
+      const existing = Chart.getChart(ctx);
+      if (existing) existing.destroy();
+    }
 
     const evalData = LandslideAIEngine.calculate(location);
     const traj = evalData.trendTrajectory;
+    const color = location && location.color ? location.color : "#991b1b";
 
     this.instances["riskTrend"] = new Chart(ctx, {
       type: "line",
@@ -189,11 +194,11 @@ const LandslideCharts = {
           {
             label: "AI Landslide Risk Probability (%)",
             data: [traj.past_24h, Math.round((traj.past_24h + traj.current)/2), traj.current, traj.forecast_6h, traj.forecast_24h, traj.forecast_7d],
-            borderColor: location.color,
-            backgroundColor: `${location.color}15`,
+            borderColor: color,
+            backgroundColor: `${color}20`,
             fill: true,
             borderWidth: 3,
-            pointBackgroundColor: location.color,
+            pointBackgroundColor: color,
             pointRadius: 6,
             pointHoverRadius: 8,
             tension: 0.3
