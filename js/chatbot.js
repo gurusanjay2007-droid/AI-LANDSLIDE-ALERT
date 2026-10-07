@@ -13,6 +13,13 @@ const LandslideAIChatbot = {
   isWaitingResponse: false,
   chatHistory: [], // Messages in active session
 
+  // AI Provider Configuration (Google Gemini / OpenAI)
+  aiProvider: localStorage.getItem("landslide_ai_provider") || "gemini",
+  geminiApiKey: localStorage.getItem("landslide_gemini_api_key") || "",
+  openaiApiKey: localStorage.getItem("landslide_openai_api_key") || "",
+  geminiModel: localStorage.getItem("landslide_gemini_model") || "gemini-1.5-flash",
+  openaiModel: localStorage.getItem("landslide_openai_model") || "gpt-4o-mini",
+
   // Pre-configured Quick Questions
   quickQuestions: {
     en: [
@@ -41,6 +48,7 @@ const LandslideAIChatbot = {
     this.conversationId = "CHAT-SES-" + Date.now().toString(36);
     this.initSpeechRecognition();
     this.bindEvents();
+    this.updateAIStatusBadge();
     this.renderInitialWelcome();
   },
 
@@ -213,43 +221,405 @@ const LandslideAIChatbot = {
       this.contextLocationId = LandslideApp.currentLocationId;
     }
 
-    const payload = {
-      message: userText,
-      location: {
-        id: this.contextLocationId
-      },
-      conversationId: this.conversationId,
-      language: this.activeLanguage
+    // 1. Check if user has connected Gemini or OpenAI API Key
+    const hasGeminiKey = this.aiProvider === "gemini" && !!this.geminiApiKey;
+    const hasOpenAIKey = this.aiProvider === "openai" && !!this.openaiApiKey;
+
+    if (hasGeminiKey) {
+      try {
+        const geminiResponse = await this.callGeminiAPI(userText);
+        this.hideTypingIndicator();
+        this.appendAIMessage(geminiResponse);
+        return;
+      } catch (geminiErr) {
+        console.warn("Google Gemini API call encountered error, activating local adaptive engine:", geminiErr);
+        if (typeof LandslideApp !== "undefined" && LandslideApp.showToast) {
+          LandslideApp.showToast("Gemini API error (using local engine): " + geminiErr.message, "warning");
+        }
+      } finally {
+        this.isWaitingResponse = false;
+      }
+    } else if (hasOpenAIKey) {
+      try {
+        const openaiResponse = await this.callOpenAIAPI(userText);
+        this.hideTypingIndicator();
+        this.appendAIMessage(openaiResponse);
+        return;
+      } catch (openaiErr) {
+        console.warn("OpenAI API call encountered error, activating local adaptive engine:", openaiErr);
+        if (typeof LandslideApp !== "undefined" && LandslideApp.showToast) {
+          LandslideApp.showToast("OpenAI API error (using local engine): " + openaiErr.message, "warning");
+        }
+      } finally {
+        this.isWaitingResponse = false;
+      }
+    }
+
+    // 2. High-Fidelity Client-Side Fallback Engine (Offline Knowledge Engine)
+    setTimeout(() => {
+      this.hideTypingIndicator();
+      const clientResponse = this.generateClientSideResponse(userText);
+      this.appendAIMessage(clientResponse);
+      this.isWaitingResponse = false;
+    }, 250);
+  },
+
+  /**
+   * Google Gemini API Integration (Free Tier)
+   */
+  async callGeminiAPI(userText) {
+    const locations = (typeof LANDSLIDE_APP_DATA !== "undefined" && LANDSLIDE_APP_DATA.locations)
+      ? LANDSLIDE_APP_DATA.locations
+      : [];
+    const alerts = (typeof LANDSLIDE_APP_DATA !== "undefined" && LANDSLIDE_APP_DATA.alerts)
+      ? LANDSLIDE_APP_DATA.alerts
+      : [];
+
+    const locSummary = locations.map(l =>
+      `- ${l.name} (${l.district}, ${l.state}): Risk ${l.risk_category} (${l.risk_probability}%), Rain 24h: ${l.rainfall_24h_mm}mm, Soil Saturation: ${l.soil_moisture_pct}%, Slope: ${l.slope_deg || l.slope_degrees}°`
+    ).join("\n");
+
+    const alertSummary = alerts.map(a =>
+      `- [${a.level || 'WARNING'}] ${a.location || a.location_name}: ${a.action || a.recommended_action}`
+    ).join("\n");
+
+    const isTa = this.activeLanguage === "ta" || /[\u0B80-\u0BFF]/.test(userText);
+
+    const systemPrompt = `You are the authoritative AI Landslide Early Warning & Geotechnical Assistant for the Western Ghats and Himalayan mountain ranges in India.
+Current live monitoring system status:
+- ${locations.length} Active Stations Monitored
+- Peak Monitored Risk Zone: Coonoor Ghat Corridor (87.2% CRITICAL) and Wayanad Chooralmala Ridge (92.4% CRITICAL)
+
+Live Sector Telemetry:
+${locSummary}
+
+Active Emergency Alerts:
+${alertSummary}
+
+Emergency Hotlines:
+- 112: National Unified Emergency
+- 1077: District Disaster Management Authority (DEOC Toll-Free)
+- 1070: State Disaster Management Control Room
+- 108: Emergency Ambulance
+- 011-24363260: National Disaster Response Force (NDRF)
+
+Instructions:
+1. Answer the user's question directly, accurately, and relevantly.
+2. Ground explanations in real-world geotechnical science (soil saturation, pore-water pressure, shear stress, slope stability, InSAR satellite displacement, and weather radar).
+3. If the user asks about landslides, road conditions, safety, or emergency preparedness, provide life-saving, authoritative advice using the live telemetry.
+4. If the user asks general questions outside landslide science (e.g. general science, geography, weather, computing, general knowledge), answer them directly, intelligently, and helpfully, and optionally connect back to mountain environmental safety where suitable.
+5. Format your response cleanly using GitHub-flavored markdown with bold headers and bullet points.
+6. ${isTa ? 'Reply fluently, naturally, and authoritatively in Tamil (தமிழ்).' : 'Reply in English.'}
+Keep answers comprehensive yet concise (around 2 to 4 concise paragraphs or bulleted points).`;
+
+    const model = this.geminiModel || "gemini-1.5-flash";
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.geminiApiKey.trim()}`;
+
+    const bodyPayload = {
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: `${systemPrompt}\n\nUser Question: ${userText}` }
+          ]
+        }
+      ],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 1200
+      }
     };
 
-    try {
-      // 1. Try Backend API Request
-      const response = await fetch("http://localhost:8000/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyPayload)
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        this.hideTypingIndicator();
-        this.appendAIMessage(data);
-        if (data.location && data.location.id) {
-          this.contextLocationId = data.location.id;
-        }
-        return;
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData?.error?.message || `Gemini API returned HTTP ${res.status}`);
+    }
+
+    const json = await res.json();
+    const replyText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!replyText) {
+      throw new Error("Empty response received from Gemini API");
+    }
+
+    const lowerResp = replyText.toLowerCase();
+    const actionButtons = [];
+    if (lowerResp.includes("map") || lowerResp.includes("sector") || lowerResp.includes("location") || lowerResp.includes("area") || lowerResp.includes("coonoor") || lowerResp.includes("wayanad")) {
+      actionButtons.push({ label: "🗺️ View Live Risk Map", action: "VIEW_MAP" });
+    }
+    if (lowerResp.includes("alert") || lowerResp.includes("warning") || lowerResp.includes("evacuat")) {
+      actionButtons.push({ label: "⚠️ View Active Alerts", action: "VIEW_ALERTS" });
+    }
+    if (lowerResp.includes("rain") || lowerResp.includes("soil") || lowerResp.includes("telemetry") || lowerResp.includes("moisture")) {
+      actionButtons.push({ label: "📡 View Environmental Data", action: "VIEW_ENVIRONMENT" });
+    }
+    if (lowerResp.includes("crack") || lowerResp.includes("report") || lowerResp.includes("photo")) {
+      actionButtons.push({ label: "📢 Submit Citizen Report", action: "SUBMIT_REPORT" });
+    }
+    if (actionButtons.length === 0) {
+      actionButtons.push({ label: "🗺️ View Live Risk Map", action: "VIEW_MAP" });
+      actionButtons.push({ label: "⚠️ View Active Alerts", action: "VIEW_ALERTS" });
+    }
+
+    return {
+      message: replyText,
+      intent: "GEMINI_GENERATIVE_AI",
+      sources: [`Google ${model} (Live Generative AI)`, "Live Geotechnical Telemetry"],
+      actionButtons: actionButtons.slice(0, 3),
+      suggestedQuestions: [
+        "What is the current risk?",
+        "What causes a landslide?",
+        "What are the warning signs?",
+        "Emergency helpline numbers"
+      ],
+      isDemoMode: false,
+      modelUsed: model
+    };
+  },
+
+  /**
+   * OpenAI API Integration (ChatGPT / GPT-4o-mini)
+   */
+  async callOpenAIAPI(userText) {
+    const locations = (typeof LANDSLIDE_APP_DATA !== "undefined" && LANDSLIDE_APP_DATA.locations)
+      ? LANDSLIDE_APP_DATA.locations
+      : [];
+
+    const isTa = this.activeLanguage === "ta" || /[\u0B80-\u0BFF]/.test(userText);
+    const model = this.openaiModel || "gpt-4o-mini";
+
+    const systemPrompt = `You are the authoritative AI Landslide Early Warning Assistant for Western Ghats and Himalayan regions.
+Answer ANY question the user asks accurately, politely, and relevantly.
+Ground your explanations in geotechnical engineering, weather radar, and satellite InSAR telemetry where applicable.
+${isTa ? 'Reply fluently in Tamil (தமிழ்).' : 'Reply in English.'}
+Use clean markdown formatting with bullet points.`;
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${this.openaiApiKey.trim()}`
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userText }
+        ],
+        temperature: 0.3,
+        max_tokens: 1000
+      })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData?.error?.message || `OpenAI API returned HTTP ${res.status}`);
+    }
+
+    const json = await res.json();
+    const replyText = json?.choices?.[0]?.message?.content;
+
+    return {
+      message: replyText,
+      intent: "OPENAI_GENERATIVE_AI",
+      sources: [`OpenAI ${model} (Live Generative AI)`, "Live Geotechnical Telemetry"],
+      actionButtons: [
+        { label: "🗺️ View Live Risk Map", action: "VIEW_MAP" },
+        { label: "⚠️ View Active Alerts", action: "VIEW_ALERTS" }
+      ],
+      suggestedQuestions: ["What causes a landslide?", "What is the current risk?", "Emergency helpline numbers"],
+      isDemoMode: false,
+      modelUsed: model
+    };
+  },
+
+  updateAIStatusBadge() {
+    const badgeEl = document.getElementById("ai-provider-badge-btn");
+    const labelEl = document.getElementById("ai-provider-label");
+
+    if (!badgeEl || !labelEl) return;
+
+    if (this.aiProvider === "gemini" && this.geminiApiKey) {
+      badgeEl.classList.add("connected");
+      labelEl.textContent = `✨ Gemini Active (${this.geminiModel})`;
+      badgeEl.title = `Connected to Google ${this.geminiModel}. Click to change settings.`;
+    } else if (this.aiProvider === "openai" && this.openaiApiKey) {
+      badgeEl.classList.add("connected");
+      labelEl.textContent = `🟢 OpenAI Active (${this.openaiModel})`;
+      badgeEl.title = `Connected to OpenAI ${this.openaiModel}. Click to change settings.`;
+    } else {
+      badgeEl.classList.remove("connected");
+      labelEl.textContent = "⚡ Free Gemini AI";
+      badgeEl.title = "Click to connect free Google Gemini or OpenAI API key";
+    }
+  },
+
+  openAISettingsModal() {
+    const modal = document.getElementById("ai-provider-modal");
+    if (!modal) return;
+
+    const geminiInput = document.getElementById("gemini-api-key-input");
+    if (geminiInput) geminiInput.value = this.geminiApiKey;
+
+    const openaiInput = document.getElementById("openai-api-key-input");
+    if (openaiInput) openaiInput.value = this.openaiApiKey;
+
+    const geminiSelect = document.getElementById("gemini-model-select");
+    if (geminiSelect) geminiSelect.value = this.geminiModel || "gemini-1.5-flash";
+
+    const openaiSelect = document.getElementById("openai-model-select");
+    if (openaiSelect) openaiSelect.value = this.openaiModel || "gpt-4o-mini";
+
+    this.switchProviderTab(this.aiProvider || "gemini");
+
+    const statusBox = document.getElementById("ai-conn-test-status");
+    if (statusBox) statusBox.style.display = "none";
+
+    modal.classList.add("open");
+  },
+
+  closeAISettingsModal() {
+    const modal = document.getElementById("ai-provider-modal");
+    if (modal) modal.classList.remove("open");
+  },
+
+  switchProviderTab(provider) {
+    this.aiProvider = provider;
+    const tabGemini = document.getElementById("tab-gemini");
+    const tabOpenai = document.getElementById("tab-openai");
+    const secGemini = document.getElementById("gemini-settings-section");
+    const secOpenai = document.getElementById("openai-settings-section");
+
+    if (provider === "gemini") {
+      if (tabGemini) tabGemini.classList.add("active");
+      if (tabOpenai) tabOpenai.classList.remove("active");
+      if (secGemini) secGemini.style.display = "block";
+      if (secOpenai) secOpenai.style.display = "none";
+    } else {
+      if (tabGemini) tabGemini.classList.remove("active");
+      if (tabOpenai) tabOpenai.classList.add("active");
+      if (secGemini) secGemini.style.display = "none";
+      if (secOpenai) secOpenai.style.display = "block";
+    }
+  },
+
+  toggleKeyVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.type = input.type === "password" ? "text" : "password";
+  },
+
+  saveAISettings() {
+    const geminiInput = document.getElementById("gemini-api-key-input");
+    const openaiInput = document.getElementById("openai-api-key-input");
+    const geminiSelect = document.getElementById("gemini-model-select");
+    const openaiSelect = document.getElementById("openai-model-select");
+
+    this.geminiApiKey = (geminiInput?.value || "").trim();
+    this.openaiApiKey = (openaiInput?.value || "").trim();
+    this.geminiModel = geminiSelect?.value || "gemini-1.5-flash";
+    this.openaiModel = openaiSelect?.value || "gpt-4o-mini";
+
+    localStorage.setItem("landslide_ai_provider", this.aiProvider);
+    localStorage.setItem("landslide_gemini_api_key", this.geminiApiKey);
+    localStorage.setItem("landslide_openai_api_key", this.openaiApiKey);
+    localStorage.setItem("landslide_gemini_model", this.geminiModel);
+    localStorage.setItem("landslide_openai_model", this.openaiModel);
+
+    this.updateAIStatusBadge();
+    this.closeAISettingsModal();
+
+    if (typeof LandslideApp !== "undefined" && LandslideApp.showToast) {
+      if ((this.aiProvider === "gemini" && this.geminiApiKey) || (this.aiProvider === "openai" && this.openaiApiKey)) {
+        LandslideApp.showToast(`Connected to ${this.aiProvider === "gemini" ? "Google Gemini" : "OpenAI"}!`, "success");
+      } else {
+        LandslideApp.showToast("Settings saved. Using offline knowledge engine.", "info");
       }
-      throw new Error(`Server returned ${response.status}`);
-    } catch (apiErr) {
-      console.warn("Backend API unavailable, executing client-side AI inference engine:", apiErr);
-      // 2. High-Fidelity Client-Side Fallback Engine (Demo Mode)
-      setTimeout(() => {
-        this.hideTypingIndicator();
-        const clientResponse = this.generateClientSideResponse(userText);
-        this.appendAIMessage(clientResponse);
-      }, 350);
-    } finally {
-      this.isWaitingResponse = false;
+    }
+  },
+
+  async testAIConnection() {
+    const statusBox = document.getElementById("ai-conn-test-status");
+    if (!statusBox) return;
+
+    statusBox.style.display = "block";
+    statusBox.innerHTML = '<span style="color:#0284c7;">⏳ Testing connection to AI endpoint...</span>';
+
+    const geminiInput = document.getElementById("gemini-api-key-input");
+    const openaiInput = document.getElementById("openai-api-key-input");
+    const key = this.aiProvider === "gemini" ? (geminiInput?.value || "").trim() : (openaiInput?.value || "").trim();
+
+    if (!key) {
+      statusBox.innerHTML = '<span style="color:#dc2626;">❌ Please enter an API key first.</span>';
+      return;
+    }
+
+    try {
+      if (this.aiProvider === "gemini") {
+        const model = document.getElementById("gemini-model-select")?.value || "gemini-1.5-flash";
+        const testRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: "Respond with 'OK' only." }] }]
+          })
+        });
+        if (!testRes.ok) {
+          const err = await testRes.json().catch(() => ({}));
+          throw new Error(err?.error?.message || `HTTP ${testRes.status}`);
+        }
+        statusBox.innerHTML = `<span style="color:#16a34a; font-weight:700;">✅ Success! Google Gemini ${model} is connected and ready.</span>`;
+      } else {
+        const model = document.getElementById("openai-model-select")?.value || "gpt-4o-mini";
+        const testRes = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${key}`
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [{ role: "user", content: "Hi" }],
+            max_tokens: 5
+          })
+        });
+        if (!testRes.ok) {
+          const err = await testRes.json().catch(() => ({}));
+          throw new Error(err?.error?.message || `HTTP ${testRes.status}`);
+        }
+        statusBox.innerHTML = `<span style="color:#16a34a; font-weight:700;">✅ Success! OpenAI ${model} is connected and ready.</span>`;
+      }
+    } catch (testErr) {
+      statusBox.innerHTML = `<span style="color:#dc2626; font-weight:700;">❌ Connection failed: ${testErr.message}</span>`;
+    }
+  },
+
+  clearAISettings() {
+    this.geminiApiKey = "";
+    this.openaiApiKey = "";
+    localStorage.removeItem("landslide_gemini_api_key");
+    localStorage.removeItem("landslide_openai_api_key");
+
+    const geminiInput = document.getElementById("gemini-api-key-input");
+    if (geminiInput) geminiInput.value = "";
+    const openaiInput = document.getElementById("openai-api-key-input");
+    if (openaiInput) openaiInput.value = "";
+
+    const statusBox = document.getElementById("ai-conn-test-status");
+    if (statusBox) {
+      statusBox.style.display = "block";
+      statusBox.innerHTML = '<span style="color:#64748b;">Keys cleared. Chatbot is running on the local knowledge engine.</span>';
+    }
+
+    this.updateAIStatusBadge();
+    if (typeof LandslideApp !== "undefined" && LandslideApp.showToast) {
+      LandslideApp.showToast("API keys cleared. Switched to offline engine.", "info");
     }
   },
 
