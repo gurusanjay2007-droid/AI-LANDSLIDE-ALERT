@@ -150,26 +150,28 @@
           <button class="btn btn-secondary btn-sm desktop-only" onclick="ExportUtils.downloadCSV()">📥 CSV</button>
           <button class="btn btn-primary btn-sm" onclick="ExportUtils.printRiskReport(LandslideApp.currentLocationId)">📄 Bulletin</button>
 
-          <!-- Interactive User Profile Capsule & Role Switcher -->
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="user-auth-pill" id="header-user-pill" onclick="LandslideAuth.openLoginModal()" title="Click to view full profile or switch account">
-              <span class="user-avatar-badge" id="header-user-avatar">🎖️</span>
-              <div class="user-info-text">
-                <span class="user-name-label" id="header-user-name">Col. Rajesh Nair</span>
-                <span class="user-role-tag" id="header-user-role-badge">DISASTER MGR</span>
-              </div>
-              <button class="switch-account-btn" type="button" aria-label="Switch User Account">
-                🔑 Switch
+          <!-- Official Authentication Container in Top Header -->
+          <div id="header-auth-container" style="display: flex; align-items: center; gap: 8px;">
+            <!-- Public mode view -->
+            <div id="header-public-badge" style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 0.775rem; color: #64748b; font-weight: 600;" class="desktop-only">👤 Public Resident View</span>
+              <button class="btn btn-primary btn-sm" id="btn-header-official-login" onclick="LandslideAuth.openOfficialLoginModal()" style="font-weight: 700; background: #0f172a; border-color: #0f172a; color: #ffffff;">
+                🏛️ Official Login
               </button>
             </div>
 
-            <div class="role-switcher">
-              <select id="global-role-select" class="role-select" aria-label="User role" title="Quick Role Switcher" onchange="LandslideAuth.loginAsRole(this.value)">
-                <option value="DISASTER_MANAGER">Disaster Mgr</option>
-                <option value="ADMIN">Admin</option>
-                <option value="ANALYST">Field Analyst</option>
-                <option value="CITIZEN">Citizen</option>
-              </select>
+            <!-- Official active session pill (when authenticated with email & password) -->
+            <div id="header-official-pill" style="display: none; align-items: center; gap: 8px;">
+              <div class="user-auth-pill" onclick="LandslideAuth.openOfficialProfileModal()" title="Verified Official Session - Click for details">
+                <span class="user-avatar-badge" id="header-user-avatar">🎖️</span>
+                <div class="user-info-text">
+                  <span class="user-name-label" id="header-user-name">Col. Rajesh Nair</span>
+                  <span class="user-role-tag" id="header-user-role-badge">DISASTER MGR</span>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideAuth.logoutOfficial()" title="Sign out of Official Portal" style="font-size: 0.725rem; padding: 4px 8px; color: #ef4444; border-color: #fca5a5;">
+                🚪 Sign Out
+              </button>
             </div>
           </div>
         </div>
@@ -1468,9 +1470,12 @@
               Google Earth Engine infrastructure, raw radar feeds, and system diagnostics are restricted to <b>System Administrators</b> and <b>District Disaster Managers</b>.
             </p>
             <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
-              <button class="btn btn-primary btn-sm" onclick="LandslideAuth.loginAsRole('ADMIN')">⚡ Switch to System Admin</button>
-              <button class="btn btn-secondary btn-sm" onclick="LandslideAuth.loginAsRole('DISASTER_MANAGER')">🎖️ Switch to Disaster Manager</button>
-              <button class="btn btn-secondary btn-sm" onclick="LandslideApp.navigateTo('dashboard')">← Return to Dashboard</button>
+              <button class="btn btn-primary btn-sm" onclick="LandslideAuth.openOfficialLoginModal('Clearance Required: Please authenticate with your official email and password to access GEE pipeline diagnostics.')" style="background: #0f172a; border-color: #0f172a;">
+                🏛️ Official Departmental Login
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideApp.navigateTo('dashboard')">
+                ← Return to Public Dashboard
+              </button>
             </div>
           </div>
 
@@ -1988,92 +1993,86 @@
   </div>
 
   <!-- ====================================================================== -->
-  <!-- MODAL: INSTITUTIONAL ROLE AUTHENTICATION & LOGIN (4 PROFILES) -->
+  <!-- MODAL: OFFICIAL PERSONNEL AUTHENTICATION PORTAL (EMAIL & PASSWORD) -->
   <!-- ====================================================================== -->
-  <div class="modal-overlay" id="auth-login-modal">
-    <div class="modal-content" style="max-width: 780px;">
-      <div class="modal-header" style="background: #ffffff; border-bottom: 1px solid var(--border-light);">
+  <div class="modal-overlay" id="official-login-modal">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header" style="background: #0f172a; color: white; border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: 1.25rem 1.5rem;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 42px; height: 42px; border-radius: 12px; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
-            🔐
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(255, 255, 255, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            🏛️
           </div>
           <div>
-            <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">Institutional Access & Role Authentication</h3>
-            <p style="font-size: 0.775rem; color: #64748b; margin: 2px 0 0 0;">Select from 4 official system roles or sign in with credentials</p>
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #ffffff; margin: 0;">Official Personnel Portal</h3>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin: 2px 0 0 0;">Authorized Government & Geotechnical Officers Only</p>
           </div>
         </div>
-        <button onclick="LandslideAuth.closeLoginModal()" style="background:none; border:none; font-size:1.3rem; cursor:pointer; color:#64748b;" aria-label="Close modal">✕</button>
+        <button onclick="LandslideAuth.closeOfficialLoginModal()" style="background:none; border:none; font-size:1.3rem; cursor:pointer; color:#94a3b8;" aria-label="Close modal">✕</button>
       </div>
 
-      <div class="modal-body" style="padding: 1.25rem 1.5rem;">
-        <!-- Tabs: Quick Switch vs Credential Form -->
-        <div class="auth-login-tabs">
-          <button type="button" class="auth-tab-btn active" id="auth-tab-quick" onclick="LandslideAuth.switchTab('quick')">
-            ⚡ 1-Click Role Logins (4 Official Profiles)
-          </button>
-          <button type="button" class="auth-tab-btn" id="auth-tab-form" onclick="LandslideAuth.switchTab('form')">
-            🔑 Credential Sign-In (Email & Password)
-          </button>
+      <div class="modal-body" style="padding: 1.5rem;">
+        <!-- Contextual reason prompt -->
+        <div id="official-login-reason-prompt" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; margin-bottom: 1.25rem;">
+          🔒 Official clearance required to perform this action.
         </div>
 
-        <!-- Section 1: 4 Role Cards Grid -->
-        <div id="auth-section-quick">
-          <p style="font-size: 0.8rem; color: #475569; margin: 0 0 1rem 0;">
-            Click <b>Quick Login</b> on any profile below to immediately assume that role with its authorized clearance, permissions, and institutional credentials.
-          </p>
-          <div id="auth-role-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;">
-            <!-- Rendered dynamically by LandslideAuth.renderRoleCards() -->
+        <!-- Error banner -->
+        <div id="official-login-error-msg" style="display: none; background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.825rem; font-weight: 600; margin-bottom: 1.25rem;"></div>
+
+        <!-- Official Sign-In Form -->
+        <form onsubmit="LandslideAuth.handleLoginSubmit(event)">
+          <div class="login-form-group">
+            <label for="official-login-email">Official Institutional Email</label>
+            <input 
+              type="email" 
+              id="official-login-email" 
+              class="login-input" 
+              placeholder="e.g. commander.nair@ddma.gov.in" 
+              autocomplete="username"
+              required
+            >
+            <div style="font-size: 0.725rem; color: #64748b; margin-top: 3px;">
+              Must be registered under DDMA, Geological Survey of India, or Geoinformatics.
+            </div>
           </div>
-        </div>
 
-        <!-- Section 2: Form Login -->
-        <div id="auth-section-form" style="display: none;">
-          <div id="auth-login-error-msg" style="display: none; background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.825rem; font-weight: 600; margin-bottom: 1rem;"></div>
+          <div class="login-form-group" style="margin-bottom: 1.25rem;">
+            <label for="official-login-password">Official Password</label>
+            <input 
+              type="password" 
+              id="official-login-password" 
+              class="login-input" 
+              placeholder="••••••••••••" 
+              autocomplete="current-password"
+              required
+            >
+          </div>
 
-          <form onsubmit="LandslideAuth.handleFormSubmit(event)">
-            <div class="login-form-group">
-              <label for="auth-login-email">Official Institutional Email</label>
-              <input type="email" id="auth-login-email" class="login-input" placeholder="e.g., commander.nair@ddma.gov.in" required>
-            </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; font-weight: 700; padding: 0.75rem; background: #0f172a; border-color: #0f172a; font-size: 0.925rem;">
+            🔒 Verify Credentials & Log In
+          </button>
+        </form>
 
-            <div class="login-form-group">
-              <label for="auth-login-password">System Password</label>
-              <input type="password" id="auth-login-password" class="login-input" placeholder="••••••••" required>
-            </div>
-
-            <div class="login-form-group">
-              <label for="auth-login-role">Assigned System Role</label>
-              <select id="auth-login-role" class="login-input" style="font-weight: 600;">
-                <option value="DISASTER_MANAGER">🎖️ Disaster Manager (DDMA Operations Commander)</option>
-                <option value="ADMIN">⚙️ System Administrator (Geoinformatics Lead)</option>
-                <option value="ANALYST">🔬 Field Analyst (Geological Survey of India)</option>
-                <option value="CITIZEN">👤 Citizen / Public Resident (Community Watch)</option>
-              </select>
-            </div>
-
-            <div style="margin-bottom: 1.25rem;">
-              <span style="font-size: 0.75rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 6px;">Quick Autofill Credentials:</span>
-              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <button type="button" class="quick-demo-btn" onclick="LandslideAuth.fillLoginForm('DISASTER_MANAGER')">🎖️ Fill Disaster Mgr</button>
-                <button type="button" class="quick-demo-btn" onclick="LandslideAuth.fillLoginForm('ADMIN')">⚙️ Fill Admin</button>
-                <button type="button" class="quick-demo-btn" onclick="LandslideAuth.fillLoginForm('ANALYST')">🔬 Fill Analyst</button>
-                <button type="button" class="quick-demo-btn" onclick="LandslideAuth.fillLoginForm('CITIZEN')">👤 Fill Citizen</button>
-              </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary" style="width: 100%; font-weight: 700; padding: 0.75rem;">
-              ✓ Authenticate & Sign In
-            </button>
-          </form>
+        <!-- Official Directory & Testing Credentials -->
+        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">
+              Authorized Official Accounts:
+            </span>
+            <span style="font-size: 0.7rem; color: #64748b;">(Click to Autofill)</span>
+          </div>
+          <div id="official-demo-accounts-chips" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- Populated dynamically by LandslideAuth.renderDirectoryChips() -->
+          </div>
         </div>
       </div>
 
-      <div class="modal-footer" style="padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 var(--radius-xl) var(--radius-xl);">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="LandslideAuth.logout()" style="color: #64748b;">
-          🚪 Sign Out (Public Mode)
-        </button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="LandslideAuth.closeLoginModal()">
-          Close
+      <div class="modal-footer" style="padding: 0.85rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 var(--radius-xl) var(--radius-xl);">
+        <span style="font-size: 0.725rem; color: #64748b;">
+          🛡️ Departmental Authentication Gateway
+        </span>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="LandslideAuth.closeOfficialLoginModal()">
+          Cancel
         </button>
       </div>
     </div>

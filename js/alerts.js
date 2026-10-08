@@ -235,7 +235,7 @@ const EarlyWarningSystem = {
 
   resolveAlert(alertId) {
     if (typeof LandslideAuth !== "undefined" && !LandslideAuth.hasPermission("RESOLVE_ALERTS")) {
-      LandslideApp.showToast("⛔ Permission Denied: Resolving official bulletins requires Disaster Manager or Administrator clearance.", "error");
+      LandslideAuth.openOfficialLoginModal("Official Clearance Required: Resolving official bulletins requires Disaster Operations clearance. Please authenticate with official credentials.");
       return;
     }
 
@@ -250,7 +250,7 @@ const EarlyWarningSystem = {
 
   reopenAlert(alertId) {
     if (typeof LandslideAuth !== "undefined" && !LandslideAuth.hasPermission("RESOLVE_ALERTS")) {
-      LandslideApp.showToast("⛔ Permission Denied: Reopening alerts requires Disaster Manager or Administrator clearance.", "error");
+      LandslideAuth.openOfficialLoginModal("Official Clearance Required: Reopening alerts requires Disaster Operations clearance. Please authenticate with official credentials.");
       return;
     }
 
@@ -265,8 +265,7 @@ const EarlyWarningSystem = {
 
   openBroadcastModal(alertId) {
     if (typeof LandslideAuth !== "undefined" && !LandslideAuth.hasPermission("BROADCAST_ALERTS")) {
-      const u = LandslideAuth.getCurrentUser();
-      LandslideApp.showToast(`⛔ Access Denied: Live Siren & SMS broadcasts are restricted to Disaster Managers or Administrators. Currently logged in as: ${u.roleLabel}`, "error");
+      LandslideAuth.openOfficialLoginModal("Official Clearance Required: Authorizing emergency sirens and CAP SMS broadcasts is restricted to District Disaster Managers & System Admins. Please authenticate with official credentials.");
       return;
     }
 

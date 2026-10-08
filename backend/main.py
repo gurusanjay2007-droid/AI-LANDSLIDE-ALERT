@@ -461,27 +461,30 @@ def get_auth_users():
     return {"status": "SUCCESS", "users": users_public}
 
 @app.post("/api/auth/login")
-def login_user(req: LoginRequest):
-    """Authenticates against the 4 institutional system roles."""
-    target_user = None
-    if req.role and req.role in MOCK_SYSTEM_USERS:
-        target_user = MOCK_SYSTEM_USERS[req.role]
-    elif req.email:
-        target_user = next(
-            (u for u in MOCK_SYSTEM_USERS.values() if u["email"].lower() == req.email.strip().lower()),
-            None
+def login_official(req: LoginRequest):
+    """Authenticates official government and geotechnical personnel with email & password."""
+    if not req.email or not req.password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Official email and password are required."
         )
+
+    clean_email = req.email.strip().lower()
+    target_user = next(
+        (u for u in MOCK_SYSTEM_USERS.values() if u["email"].lower() == clean_email and u["role"] != "CITIZEN"),
+        None
+    )
 
     if not target_user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found. Select from DISASTER_MANAGER, ADMIN, ANALYST, or CITIZEN."
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: Unrecognized official email. Official portal access is strictly restricted to authorized personnel."
         )
 
-    if req.password and req.password not in [target_user["password"], "demo", "123456"]:
+    if req.password != target_user["password"]:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid password for {target_user['email']}. Demo password is: {target_user['password']}"
+            detail=f"Access Denied: Incorrect password for official account {target_user['email']}."
         )
 
     return {

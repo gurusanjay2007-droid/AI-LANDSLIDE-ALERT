@@ -1,26 +1,30 @@
 /**
  * AI-Based Early Warning & Landslide Risk Monitoring System
- * Authentication & Role-Based Access Control (RBAC) Module
+ * Official Government & Departmental Personnel Authentication Portal
+ * 
+ * Access to operational command, sirens, GEE pipeline configurations,
+ * and report verifications is restricted strictly to verified officials
+ * logging in with their official email and password.
  */
 
 const LandslideAuth = {
-  // 4 Official System User Profiles
-  USERS: {
-    DISASTER_MANAGER: {
-      id: "USR-001",
+  // 1. Authorized Official Accounts Directory
+  OFFICIAL_ACCOUNTS: [
+    {
+      id: "OFF-001",
       role: "DISASTER_MANAGER",
-      roleLabel: "Disaster Manager",
+      roleLabel: "Disaster Operations Manager",
       shortLabel: "Disaster Mgr",
-      badgeColor: "#1e40af", // Indigo Blue
+      badgeName: "DISASTER MGR",
+      badgeColor: "#1e40af", // Indigo
       badgeBg: "#dbeafe",
       fullName: "Col. Rajesh Nair",
-      title: "Operations Commander, District Disaster Management Authority (DDMA)",
-      district: "Nilgiris & Western Ghats Zone",
+      department: "District Disaster Management Authority (DDMA)",
+      district: "Nilgiris & Western Ghats Sector",
       email: "commander.nair@ddma.gov.in",
-      phone: "+91 94432 10100",
-      avatarEmoji: "🎖️",
       password: "manager123",
-      clearanceLevel: "Level 4 - Command & Control",
+      avatarEmoji: "🎖️",
+      clearance: "Level 4 - Operational Command",
       permissions: [
         "BROADCAST_ALERTS",
         "RESOLVE_ALERTS",
@@ -30,23 +34,23 @@ const LandslideAuth = {
         "VIEW_ALL_TELEMETRY",
         "RUN_AI_SIMULATOR"
       ],
-      description: "Authorized to issue state-level emergency sirens, broadcast CAP SMS advisories, coordinate evacuations, and sign disaster response bulletins."
+      description: "Authorized to issue state-level early warning sirens, dispatch CAP SMS bulletins, verify hazard reports, and coordinate evacuations."
     },
-    ADMIN: {
-      id: "USR-002",
+    {
+      id: "OFF-002",
       role: "ADMIN",
-      roleLabel: "System Administrator",
-      shortLabel: "Admin",
+      roleLabel: "System & GEE Infrastructure Admin",
+      shortLabel: "System Admin",
+      badgeName: "SYSTEM ADMIN",
       badgeColor: "#6b21a8", // Purple
       badgeBg: "#f3e8ff",
       fullName: "Dr. K. S. Sharma",
-      title: "Lead Geoinformatics & GEE Infrastructure Administrator",
+      department: "National Geoinformatics & Earth Engine Operations",
       district: "National Geospatial Operations Hub",
       email: "admin.sharma@landslide-alert.gov.in",
-      phone: "+91 98840 99881",
-      avatarEmoji: "⚙️",
       password: "admin123",
-      clearanceLevel: "Level 5 - Root Institutional Admin",
+      avatarEmoji: "⚙️",
+      clearance: "Level 5 - Root Institutional Admin",
       permissions: [
         "FULL_ADMIN_ACCESS",
         "MANAGE_GEE_PIPELINE",
@@ -58,23 +62,23 @@ const LandslideAuth = {
         "VIEW_ALL_TELEMETRY",
         "RUN_AI_SIMULATOR"
       ],
-      description: "Unrestricted institutional superuser: Google Earth Engine cloud pipelines, Doppler radar handshakes, sensor hardware calibrations, and system overrides."
+      description: "Unrestricted institutional administration: Google Earth Engine Sentinel-1 InSAR ingest, IMD Doppler radars, and hardware calibrations."
     },
-    ANALYST: {
-      id: "USR-003",
+    {
+      id: "OFF-003",
       role: "ANALYST",
-      roleLabel: "Field Analyst",
+      roleLabel: "Senior Geotechnical Risk Analyst",
       shortLabel: "Field Analyst",
+      badgeName: "FIELD ANALYST",
       badgeColor: "#d97706", // Amber
       badgeBg: "#fef3c7",
       fullName: "Pooja Venkat, M.Sc.",
-      title: "Senior Geotechnical Risk Analyst, Geological Survey of India",
-      district: "Nilgiris & Wayanad Field Sectors",
+      department: "Geological Survey of India (GSI)",
+      district: "Nilgiris & Wayanad Field Stations",
       email: "pooja.analyst@gsi.gov.in",
-      phone: "+91 97500 44211",
-      avatarEmoji: "🔬",
       password: "analyst123",
-      clearanceLevel: "Level 3 - Geotechnical Diagnostics",
+      avatarEmoji: "🔬",
+      clearance: "Level 3 - Geotechnical Diagnostics",
       permissions: [
         "VIEW_ALL_TELEMETRY",
         "RUN_AI_SIMULATOR",
@@ -82,64 +86,70 @@ const LandslideAuth = {
         "DOWNLOAD_CSV_BULLETINS",
         "LOG_TECHNICAL_ASSESSMENT"
       ],
-      description: "Performs multi-mission satellite InSAR analysis, runs AI What-If stress test simulations, and inspects pore-water pressure telemetry."
-    },
-    CITIZEN: {
-      id: "USR-004",
-      role: "CITIZEN",
-      roleLabel: "Citizen / Resident",
-      shortLabel: "Citizen",
-      badgeColor: "#059669", // Emerald
-      badgeBg: "#d1fae5",
-      fullName: "Ananya Ramesh",
-      title: "Nilgiris Community Resident & Hill Watch Volunteer",
-      district: "Coonoor Valley, Nilgiris",
-      email: "ananya.citizen@gmail.com",
-      phone: "+91 98421 77334",
-      avatarEmoji: "👤",
-      password: "citizen123",
-      clearanceLevel: "Level 1 - Public Resident Portal",
-      permissions: [
-        "SUBMIT_CITIZEN_REPORT",
-        "VIEW_PUBLIC_MAP",
-        "VIEW_EARLY_WARNINGS",
-        "USE_AI_CHATBOT",
-        "CALL_EMERGENCY_HELPLINES"
-      ],
-      description: "Community resident portal: Submit crowd-sourced slope hazard sightings with GPS photos, check local danger ratings, and receive evacuation notices."
+      description: "Conducts multi-mission satellite InSAR interferometry, executes AI susceptibility stress testing, and analyzes subsurface pore-water pressures."
     }
+  ],
+
+  // 2. Default Public Resident Profile (Unauthenticated visitors)
+  PUBLIC_PROFILE: {
+    id: "PUB-000",
+    role: "CITIZEN",
+    roleLabel: "Citizen / Public Resident",
+    shortLabel: "Citizen",
+    badgeName: "PUBLIC",
+    badgeColor: "#059669",
+    badgeBg: "#d1fae5",
+    fullName: "Public Resident",
+    department: "Community Safety Network",
+    district: "Western Ghats Mountain Community",
+    email: "",
+    avatarEmoji: "👤",
+    clearance: "Level 1 - Public Portal",
+    permissions: [
+      "SUBMIT_CITIZEN_REPORT",
+      "VIEW_PUBLIC_MAP",
+      "VIEW_EARLY_WARNINGS",
+      "USE_AI_CHATBOT",
+      "CALL_EMERGENCY_HELPLINES"
+    ],
+    description: "Public resident portal for monitoring local hill sector danger levels, submitting crowd-sourced hazard sightings, and receiving warnings."
   },
 
-  currentUser: null,
+  currentOfficial: null,
 
   init() {
-    // 1. Load active user from localStorage or default to DISASTER_MANAGER
-    const savedRole = localStorage.getItem("landslide_active_role");
-    if (savedRole && this.USERS[savedRole]) {
-      this.currentUser = this.USERS[savedRole];
+    // Check if an official is already authenticated in this browser session
+    const savedOfficialEmail = localStorage.getItem("landslide_authenticated_official");
+    if (savedOfficialEmail) {
+      const matched = this.OFFICIAL_ACCOUNTS.find(
+        o => o.email.toLowerCase() === savedOfficialEmail.trim().toLowerCase()
+      );
+      if (matched) {
+        this.currentOfficial = matched;
+      } else {
+        this.currentOfficial = null;
+        localStorage.removeItem("landslide_authenticated_official");
+      }
     } else {
-      this.currentUser = this.USERS.DISASTER_MANAGER;
+      this.currentOfficial = null;
     }
 
-    // Synchronize LandslideApp.currentRole
+    // Sync app role
     if (typeof LandslideApp !== "undefined") {
-      LandslideApp.currentRole = this.currentUser.role;
+      LandslideApp.currentRole = this.getCurrentUser().role;
     }
 
-    // 2. Render Header Capsule and synchronize dropdown
-    this.renderHeaderCapsule();
-    this.syncRoleSelectDropdown();
-    this.updateNavigationRestrictions();
-    this.populateCitizenReportDefaults();
+    this.updateUI();
+    this.renderDirectoryChips();
+    console.log(`[LandslideAuth] Initialized. Active mode: ${this.isOfficialLoggedIn() ? 'OFFICIAL (' + this.currentOfficial.fullName + ')' : 'PUBLIC RESIDENT'}`);
+  },
 
-    // 3. Render Modal Content
-    this.renderRoleCards();
-
-    console.log(`[LandslideAuth] Initialized as ${this.currentUser.roleLabel} (${this.currentUser.fullName})`);
+  isOfficialLoggedIn() {
+    return this.currentOfficial !== null;
   },
 
   getCurrentUser() {
-    return this.currentUser || this.USERS.DISASTER_MANAGER;
+    return this.currentOfficial || this.PUBLIC_PROFILE;
   },
 
   hasPermission(permissionName) {
@@ -148,37 +158,50 @@ const LandslideAuth = {
   },
 
   canAccessView(viewName) {
-    const role = this.getCurrentUser().role;
-    if (role === "ADMIN") return true;
-
     if (viewName === "admin") {
-      return role === "ADMIN" || role === "DISASTER_MANAGER";
+      return this.hasPermission("MANAGE_GEE_PIPELINE") || this.hasPermission("FULL_ADMIN_ACCESS");
     }
-
     return true;
   },
 
-  loginAsRole(roleKey, notify = true) {
-    if (!this.USERS[roleKey]) {
-      console.error(`Invalid role: ${roleKey}`);
+  loginOfficialWithCredentials(email, password) {
+    const cleanEmail = (email || "").trim().toLowerCase();
+    const cleanPass = (password || "").trim();
+
+    if (!cleanEmail || !cleanPass) {
+      this.showLoginError("Please enter both your official email and password.");
       return false;
     }
 
-    const previousRole = this.currentUser.role;
-    this.currentUser = this.USERS[roleKey];
-    localStorage.setItem("landslide_active_role", roleKey);
+    const official = this.OFFICIAL_ACCOUNTS.find(
+      o => o.email.toLowerCase() === cleanEmail
+    );
 
-    if (typeof LandslideApp !== "undefined") {
-      LandslideApp.currentRole = roleKey;
+    if (!official) {
+      this.showLoginError("Access Denied: Unrecognized official email address. Only authorized departmental personnel with registered credentials can log in.");
+      return false;
     }
 
-    this.renderHeaderCapsule();
-    this.syncRoleSelectDropdown();
-    this.updateNavigationRestrictions();
-    this.populateCitizenReportDefaults();
-    this.renderRoleCards();
+    if (official.password !== cleanPass) {
+      this.showLoginError(`Access Denied: Incorrect password for ${official.email}. Please verify your credentials.`);
+      return false;
+    }
 
-    // Re-render views that depend on roles
+    // Authentication Success
+    this.currentOfficial = official;
+    localStorage.setItem("landslide_authenticated_official", official.email);
+
+    if (typeof LandslideApp !== "undefined") {
+      LandslideApp.currentRole = official.role;
+    }
+
+    this.clearLoginError();
+    this.closeOfficialLoginModal();
+    this.updateUI();
+
+    LandslideApp.showToast(`Official Session Activated: Welcome, ${official.fullName} (${official.roleLabel})`, "success");
+
+    // Refresh views that reflect official roles
     if (typeof CitizenReporting !== "undefined" && typeof CitizenReporting.renderReportsTable === "function") {
       CitizenReporting.renderReportsTable();
     }
@@ -186,264 +209,204 @@ const LandslideAuth = {
       EarlyWarningSystem.renderAlertFeed();
     }
 
-    // If currently on a view that is restricted for this new role, redirect to dashboard
-    if (!this.canAccessView(LandslideApp.currentView)) {
+    return true;
+  },
+
+  logoutOfficial() {
+    const prevName = this.currentOfficial ? this.currentOfficial.fullName : "Official";
+    this.currentOfficial = null;
+    localStorage.removeItem("landslide_authenticated_official");
+
+    if (typeof LandslideApp !== "undefined") {
+      LandslideApp.currentRole = "CITIZEN";
+    }
+
+    this.updateUI();
+    LandslideApp.showToast(`Official session terminated for ${prevName}. Reverted to Public Resident mode.`, "info");
+
+    if (typeof CitizenReporting !== "undefined" && typeof CitizenReporting.renderReportsTable === "function") {
+      CitizenReporting.renderReportsTable();
+    }
+    if (typeof EarlyWarningSystem !== "undefined" && typeof EarlyWarningSystem.renderAlertFeed === "function") {
+      EarlyWarningSystem.renderAlertFeed();
+    }
+
+    if (typeof LandslideApp !== "undefined" && LandslideApp.currentView === "admin") {
       LandslideApp.navigateTo("dashboard");
-      LandslideApp.showToast(`Switched to ${this.currentUser.roleLabel}. Redirected to Dashboard.`, "warning");
-    } else if (notify) {
-      LandslideApp.showToast(`Logged in as ${this.currentUser.fullName} (${this.currentUser.roleLabel})`, "success");
-    }
-
-    this.closeLoginModal();
-    return true;
-  },
-
-  loginWithCredentials(email, password, roleKey) {
-    // If role provided directly, check against that role
-    let targetUser = null;
-
-    if (roleKey && this.USERS[roleKey]) {
-      targetUser = this.USERS[roleKey];
-    } else {
-      // Find matching user by email
-      targetUser = Object.values(this.USERS).find(
-        u => u.email.toLowerCase() === email.trim().toLowerCase()
-      );
-    }
-
-    if (!targetUser) {
-      this.showLoginError("Account not found. Please select a valid institutional role or email.");
-      return false;
-    }
-
-    if (password && password !== targetUser.password && password !== "demo" && password !== "123456") {
-      this.showLoginError(`Invalid password for ${targetUser.email}. Demo password is: ${targetUser.password}`);
-      return false;
-    }
-
-    this.clearLoginError();
-    this.loginAsRole(targetUser.role, true);
-    return true;
-  },
-
-  logout() {
-    // Default to Public Citizen mode on sign out
-    this.loginAsRole("CITIZEN", false);
-    LandslideApp.showToast("Signed out. Active mode set to Citizen (Public Resident).", "info");
-  },
-
-  renderHeaderCapsule() {
-    const user = this.getCurrentUser();
-    
-    const avatarEl = document.getElementById("header-user-avatar");
-    const nameEl = document.getElementById("header-user-name");
-    const roleEl = document.getElementById("header-user-role-badge");
-
-    if (avatarEl) avatarEl.textContent = user.avatarEmoji;
-    if (nameEl) nameEl.textContent = user.fullName.split(" ")[0] + (user.fullName.split(" ")[1] ? " " + user.fullName.split(" ")[1] : "");
-    if (roleEl) {
-      roleEl.textContent = user.shortLabel.toUpperCase();
-      roleEl.style.backgroundColor = user.badgeBg;
-      roleEl.style.color = user.badgeColor;
-      roleEl.style.borderColor = user.badgeColor + "40";
     }
   },
 
-  syncRoleSelectDropdown() {
-    const select = document.getElementById("global-role-select");
-    if (select && select.value !== this.currentUser.role) {
-      select.value = this.currentUser.role;
+  updateUI() {
+    const isOfficial = this.isOfficialLoggedIn();
+    const publicBadge = document.getElementById("header-public-badge");
+    const officialPill = document.getElementById("header-official-pill");
+
+    if (publicBadge && officialPill) {
+      if (isOfficial) {
+        publicBadge.style.display = "none";
+        officialPill.style.display = "flex";
+
+        const off = this.currentOfficial;
+        const avatarEl = document.getElementById("header-user-avatar");
+        const nameEl = document.getElementById("header-user-name");
+        const roleEl = document.getElementById("header-user-role-badge");
+
+        if (avatarEl) avatarEl.textContent = off.avatarEmoji;
+        if (nameEl) nameEl.textContent = off.fullName;
+        if (roleEl) {
+          roleEl.textContent = off.badgeName;
+          roleEl.style.backgroundColor = off.badgeBg;
+          roleEl.style.color = off.badgeColor;
+          roleEl.style.borderColor = off.badgeColor + "40";
+        }
+      } else {
+        publicBadge.style.display = "flex";
+        officialPill.style.display = "none";
+      }
     }
+
+    // Update navigation lock badges
+    this.updateNavigationRestrictions();
+    this.enforceViewPermission(typeof LandslideApp !== "undefined" ? LandslideApp.currentView : "dashboard");
   },
 
   updateNavigationRestrictions() {
-    const user = this.getCurrentUser();
-    const isCitizen = user.role === "CITIZEN";
-    const isAnalyst = user.role === "ANALYST";
-
-    // Admin nav item lock badge
+    const isOfficial = this.isOfficialLoggedIn();
     const adminNavItem = document.querySelector('.nav-item[data-view="admin"]');
+
     if (adminNavItem) {
       const lockBadge = adminNavItem.querySelector(".nav-lock-badge");
-      if (isCitizen) {
+      if (!isOfficial) {
         if (!lockBadge) {
           const span = document.createElement("span");
           span.className = "nav-lock-badge";
-          span.style.cssText = "margin-left: auto; font-size: 0.7rem; background: #fee2e2; color: #991b1b; padding: 1px 6px; border-radius: 9999px; font-weight: 700;";
-          span.textContent = "🔒 Staff";
+          span.style.cssText = "margin-left: auto; font-size: 0.675rem; background: #fee2e2; color: #991b1b; padding: 1px 6px; border-radius: 9999px; font-weight: 700;";
+          span.textContent = "🔒 Officials";
           adminNavItem.appendChild(span);
         }
       } else if (lockBadge) {
         lockBadge.remove();
       }
     }
-
-    // Check if the current view should show an unauthorized message
-    this.enforceViewPermission(LandslideApp.currentView);
   },
 
   enforceViewPermission(viewName) {
-    const user = this.getCurrentUser();
+    const isOfficial = this.isOfficialLoggedIn();
     const adminBanner = document.getElementById("admin-permission-guard-banner");
+    const adminControls = document.getElementById("admin-interactive-controls-container");
 
-    if (viewName === "admin" && user.role === "CITIZEN") {
-      if (adminBanner) adminBanner.style.display = "block";
-      const adminControls = document.getElementById("admin-interactive-controls-container");
-      if (adminControls) adminControls.style.display = "none";
-    } else {
-      if (adminBanner) adminBanner.style.display = "none";
-      const adminControls = document.getElementById("admin-interactive-controls-container");
-      if (adminControls) adminControls.style.display = "block";
+    if (viewName === "admin") {
+      if (!isOfficial) {
+        if (adminBanner) adminBanner.style.display = "block";
+        if (adminControls) adminControls.style.display = "none";
+      } else {
+        if (adminBanner) adminBanner.style.display = "none";
+        if (adminControls) adminControls.style.display = "block";
+      }
     }
   },
 
-  populateCitizenReportDefaults() {
-    const user = this.getCurrentUser();
-    const nameInput = document.getElementById("report-name");
-    const contactInput = document.getElementById("report-contact");
-
-    if (nameInput && (!nameInput.value || nameInput.getAttribute("data-autofilled") === "true")) {
-      nameInput.value = user.fullName;
-      nameInput.setAttribute("data-autofilled", "true");
-    }
-    if (contactInput && (!contactInput.value || contactInput.getAttribute("data-autofilled") === "true")) {
-      contactInput.value = `${user.phone} (${user.email})`;
-      contactInput.setAttribute("data-autofilled", "true");
-    }
-  },
-
-  renderRoleCards() {
-    const container = document.getElementById("auth-role-cards-grid");
-    if (!container) return;
-
-    const currentRole = this.currentUser.role;
-
-    container.innerHTML = Object.values(this.USERS).map(u => {
-      const isActive = u.role === currentRole;
-      const permChips = u.permissions.slice(0, 3).map(p => {
-        const friendly = p.replace(/_/g, " ").toLowerCase();
-        return `<span style="display:inline-block; font-size:0.7rem; background:#f1f5f9; color:#475569; padding:2px 7px; border-radius:4px; font-weight:600;">✓ ${friendly}</span>`;
-      }).join(" ");
-
-      return `
-        <div class="auth-role-card ${isActive ? 'active-role-card' : ''}" style="
-          border: 2px solid ${isActive ? u.badgeColor : 'var(--border-light)'};
-          background: ${isActive ? '#ffffff' : '#ffffff'};
-          border-radius: 12px;
-          padding: 1.1rem;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          position: relative;
-          box-shadow: ${isActive ? '0 4px 14px rgba(30,64,175,0.12)' : 'var(--shadow-sm)'};
-          transition: all 0.2s ease;
-        ">
-          ${isActive ? `
-            <div style="position: absolute; top: -10px; right: 12px; background: ${u.badgeColor}; color: white; font-size: 0.675rem; font-weight: 800; padding: 2px 9px; border-radius: 9999px; letter-spacing: 0.04em;">
-              ACTIVE SESSION
-            </div>
-          ` : ''}
-
-          <div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-              <div style="font-size: 1.75rem; width: 44px; height: 44px; border-radius: 10px; background: ${u.badgeBg}; display: flex; align-items: center; justify-content: center;">
-                ${u.avatarEmoji}
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin: 0;">${u.fullName}</h4>
-                </div>
-                <div style="display: inline-block; font-size: 0.7rem; font-weight: 700; color: ${u.badgeColor}; background: ${u.badgeBg}; padding: 1px 7px; border-radius: 9999px; margin-top: 3px;">
-                  ${u.roleLabel}
-                </div>
-              </div>
-            </div>
-
-            <p style="font-size: 0.775rem; color: #475569; line-height: 1.35; margin: 6px 0 8px 0;">
-              ${u.title}
-            </p>
-
-            <div style="font-size: 0.725rem; color: #64748b; margin-bottom: 8px;">
-              <div>📧 <b>Email:</b> ${u.email}</div>
-              <div>🔑 <b>Password:</b> <code style="background:#f1f5f9; padding:1px 4px; border-radius:4px; font-weight:700;">${u.password}</code></div>
-            </div>
-
-            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px;">
-              ${permChips}
-            </div>
-          </div>
-
-          <button 
-            type="button" 
-            class="btn ${isActive ? 'btn-secondary' : 'btn-primary'} btn-sm" 
-            style="width: 100%; font-weight: 700; ${isActive ? 'border-color: ' + u.badgeColor + '; color: ' + u.badgeColor + ';' : 'background-color: ' + u.badgeColor + ';'}"
-            onclick="LandslideAuth.loginAsRole('${u.role}')"
-          >
-            ${isActive ? '✓ Currently Active' : '⚡ Quick Login as ' + u.shortLabel}
-          </button>
-        </div>
-      `;
-    }).join("");
-  },
-
-  openLoginModal() {
-    const modal = document.getElementById("auth-login-modal");
+  openOfficialLoginModal(reasonMessage = null) {
+    const modal = document.getElementById("official-login-modal");
     if (!modal) return;
-    this.renderRoleCards();
+
     this.clearLoginError();
+
+    const reasonEl = document.getElementById("official-login-reason-prompt");
+    if (reasonEl) {
+      if (reasonMessage) {
+        reasonEl.textContent = reasonMessage;
+        reasonEl.style.display = "block";
+      } else {
+        reasonEl.style.display = "none";
+      }
+    }
+
     modal.classList.add("open");
+
+    // Auto-focus email field
+    setTimeout(() => {
+      const emailInput = document.getElementById("official-login-email");
+      if (emailInput) emailInput.focus();
+    }, 100);
   },
 
-  closeLoginModal() {
-    const modal = document.getElementById("auth-login-modal");
+  closeOfficialLoginModal() {
+    const modal = document.getElementById("official-login-modal");
     if (modal) modal.classList.remove("open");
   },
 
-  switchTab(tabName) {
-    const tab1Btn = document.getElementById("auth-tab-quick");
-    const tab2Btn = document.getElementById("auth-tab-form");
-    const sec1 = document.getElementById("auth-section-quick");
-    const sec2 = document.getElementById("auth-section-form");
-
-    if (tabName === "quick") {
-      if (tab1Btn) tab1Btn.classList.add("active");
-      if (tab2Btn) tab2Btn.classList.remove("active");
-      if (sec1) sec1.style.display = "block";
-      if (sec2) sec2.style.display = "none";
-    } else {
-      if (tab1Btn) tab1Btn.classList.remove("active");
-      if (tab2Btn) tab2Btn.classList.add("active");
-      if (sec1) sec1.style.display = "none";
-      if (sec2) sec2.style.display = "block";
+  openOfficialProfileModal() {
+    if (!this.isOfficialLoggedIn()) {
+      this.openOfficialLoginModal();
+      return;
     }
+    const off = this.currentOfficial;
+    LandslideApp.showToast(`Logged in as: ${off.fullName} • ${off.department} (${off.clearance})`, "info");
   },
 
-  fillLoginForm(roleKey) {
-    const u = this.USERS[roleKey];
-    if (!u) return;
+  fillOfficialCredentials(email, password) {
+    const emailInput = document.getElementById("official-login-email");
+    const passInput = document.getElementById("official-login-password");
 
-    this.switchTab("form");
-    const emailInput = document.getElementById("auth-login-email");
-    const passInput = document.getElementById("auth-login-password");
-    const roleSelect = document.getElementById("auth-login-role");
+    if (emailInput) emailInput.value = email;
+    if (passInput) passInput.value = password;
 
-    if (emailInput) emailInput.value = u.email;
-    if (passInput) passInput.value = u.password;
-    if (roleSelect) roleSelect.value = u.role;
+    this.clearLoginError();
   },
 
-  handleFormSubmit(e) {
+  renderDirectoryChips() {
+    const container = document.getElementById("official-demo-accounts-chips");
+    if (!container) return;
+
+    container.innerHTML = this.OFFICIAL_ACCOUNTS.map(o => `
+      <div 
+        class="official-account-chip" 
+        onclick="LandslideAuth.fillOfficialCredentials('${o.email}', '${o.password}')"
+        title="Click to fill ${o.email} / ${o.password}"
+        style="
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-left: 3px solid ${o.badgeColor};
+          padding: 0.6rem 0.75rem;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+        "
+      >
+        <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+          <span style="font-size: 1.25rem;">${o.avatarEmoji}</span>
+          <div style="min-width: 0;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ${o.fullName}
+            </div>
+            <div style="font-size: 0.7rem; color: #64748b;">
+              ${o.shortLabel} • <span style="font-family: monospace; color: #334155;">${o.email}</span>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.7rem; padding: 2px 7px; white-space: nowrap;">
+          Fill ⬇️
+        </button>
+      </div>
+    `).join("");
+  },
+
+  handleLoginSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
 
-    const email = document.getElementById("auth-login-email")?.value || "";
-    const pass = document.getElementById("auth-login-password")?.value || "";
-    const role = document.getElementById("auth-login-role")?.value || "";
+    const email = document.getElementById("official-login-email")?.value;
+    const pass = document.getElementById("official-login-password")?.value;
 
-    return this.loginWithCredentials(email, pass, role);
+    return this.loginOfficialWithCredentials(email, pass);
   },
 
   showLoginError(msg) {
-    const errBox = document.getElementById("auth-login-error-msg");
+    const errBox = document.getElementById("official-login-error-msg");
     if (errBox) {
       errBox.textContent = msg;
       errBox.style.display = "block";
@@ -453,7 +416,7 @@ const LandslideAuth = {
   },
 
   clearLoginError() {
-    const errBox = document.getElementById("auth-login-error-msg");
+    const errBox = document.getElementById("official-login-error-msg");
     if (errBox) {
       errBox.textContent = "";
       errBox.style.display = "none";
@@ -461,7 +424,7 @@ const LandslideAuth = {
   }
 };
 
-// Auto-initialize when DOM ready
+// Initialize on DOM load
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => LandslideAuth.init());
 } else {

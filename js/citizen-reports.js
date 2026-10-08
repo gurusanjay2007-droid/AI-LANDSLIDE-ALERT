@@ -279,7 +279,7 @@ const CitizenReporting = {
 
   updateStatus(reportId, newStatus) {
     if (typeof LandslideAuth !== "undefined" && !LandslideAuth.hasPermission("VERIFY_CITIZEN_REPORTS")) {
-      LandslideApp.showToast("⛔ Permission Denied: Report verification requires Disaster Manager or Administrator clearance.", "error");
+      LandslideAuth.openOfficialLoginModal("Official Clearance Required: Verification of citizen ground reports is restricted to District Disaster Managers & System Administrators. Please authenticate with official credentials.");
       return;
     }
 
