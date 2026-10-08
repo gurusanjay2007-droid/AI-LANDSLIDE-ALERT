@@ -64,6 +64,11 @@ const LandslideApp = {
       targetSec.style.display = "block";
     }
 
+    // Enforce role-based view permissions & warnings
+    if (typeof LandslideAuth !== "undefined") {
+      LandslideAuth.enforceViewPermission(viewName);
+    }
+
     // Update active nav items
     document.querySelectorAll(".nav-item").forEach(item => {
       if (item.getAttribute("data-view") === viewName) {
@@ -472,10 +477,14 @@ const LandslideApp = {
     const select = document.getElementById("global-role-select");
     if (select) {
       select.addEventListener("change", (e) => {
-        this.currentRole = e.target.value;
-        this.showToast(`Active User Role Switched to: ${this.currentRole}`, "info");
-        if (this.currentView === "citizen-reports") {
-          CitizenReporting.renderReportsTable();
+        if (typeof LandslideAuth !== "undefined") {
+          LandslideAuth.loginAsRole(e.target.value);
+        } else {
+          this.currentRole = e.target.value;
+          this.showToast(`Active User Role Switched to: ${this.currentRole}`, "info");
+          if (this.currentView === "citizen-reports") {
+            CitizenReporting.renderReportsTable();
+          }
         }
       });
     }

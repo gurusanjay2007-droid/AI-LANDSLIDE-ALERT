@@ -228,3 +228,15 @@ CREATE TABLE IF NOT EXISTS landslides (
 CREATE INDEX idx_landslides_geom ON landslides USING GIST(geom);
 CREATE INDEX idx_landslides_date ON landslides(event_date DESC);
 CREATE INDEX idx_landslides_district ON landslides(district);
+
+-- ==============================================================================
+-- SEED DATA: 4 INSTITUTIONAL USER ACCOUNTS (ROLES & CREDENTIALS)
+-- ==============================================================================
+INSERT INTO users (email, password_hash, full_name, phone_number, role, assigned_district)
+VALUES
+    ('commander.nair@ddma.gov.in', '$2b$12$eX4mPLeH9...manager123', 'Col. Rajesh Nair', '+91 94432 10100', 'DISASTER_MANAGER', 'Nilgiris & Western Ghats Zone'),
+    ('admin.sharma@landslide-alert.gov.in', '$2b$12$eX4mPLeH9...admin123', 'Dr. K. S. Sharma', '+91 98840 99881', 'ADMIN', 'National Geospatial Hub'),
+    ('pooja.analyst@gsi.gov.in', '$2b$12$eX4mPLeH9...analyst123', 'Pooja Venkat, M.Sc.', '+91 97500 44211', 'ANALYST', 'Nilgiris & Wayanad Sectors'),
+    ('ananya.citizen@gmail.com', '$2b$12$eX4mPLeH9...citizen123', 'Ananya Ramesh', '+91 98421 77334', 'CITIZEN', 'Coonoor Valley, Nilgiris')
+ON CONFLICT (email) DO NOTHING;
+

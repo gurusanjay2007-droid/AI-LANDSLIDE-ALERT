@@ -150,13 +150,27 @@
           <button class="btn btn-secondary btn-sm desktop-only" onclick="ExportUtils.downloadCSV()">📥 CSV</button>
           <button class="btn btn-primary btn-sm" onclick="ExportUtils.printRiskReport(LandslideApp.currentLocationId)">📄 Bulletin</button>
 
-          <div class="role-switcher">
-            <select id="global-role-select" class="role-select" aria-label="User role">
-              <option value="DISASTER_MANAGER">Disaster Mgr</option>
-              <option value="ADMIN">Admin</option>
-              <option value="ANALYST">Field Analyst</option>
-              <option value="CITIZEN">Citizen</option>
-            </select>
+          <!-- Interactive User Profile Capsule & Role Switcher -->
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="user-auth-pill" id="header-user-pill" onclick="LandslideAuth.openLoginModal()" title="Click to view full profile or switch account">
+              <span class="user-avatar-badge" id="header-user-avatar">🎖️</span>
+              <div class="user-info-text">
+                <span class="user-name-label" id="header-user-name">Col. Rajesh Nair</span>
+                <span class="user-role-tag" id="header-user-role-badge">DISASTER MGR</span>
+              </div>
+              <button class="switch-account-btn" type="button" aria-label="Switch User Account">
+                🔑 Switch
+              </button>
+            </div>
+
+            <div class="role-switcher">
+              <select id="global-role-select" class="role-select" aria-label="User role" title="Quick Role Switcher" onchange="LandslideAuth.loginAsRole(this.value)">
+                <option value="DISASTER_MANAGER">Disaster Mgr</option>
+                <option value="ADMIN">Admin</option>
+                <option value="ANALYST">Field Analyst</option>
+                <option value="CITIZEN">Citizen</option>
+              </select>
+            </div>
           </div>
         </div>
       </header>
@@ -1446,20 +1460,38 @@
         <!-- VIEW 11: SYSTEM & GEE HEALTH (ADMIN) -->
         <!-- ================================================================== -->
         <section id="view-admin" class="view-section" style="display: none;">
-          <div class="page-title-banner">
-            <div>
-              <h2>⚙️ System Diagnostics & GEE Pipeline Operations</h2>
-              <p>Real-time operational monitoring for Google Earth Engine, IMD Doppler radars, ground IoT telemetry, and AI inference latency.</p>
-            </div>
-            <div class="page-actions">
-              <button class="btn btn-secondary btn-sm" onclick="LandslideApp.refreshLiveData()">
-                <span>🔄 Ping All Feeds</span>
-              </button>
-              <button class="btn btn-primary btn-sm" onclick="ExportUtils.downloadCSV()">
-                <span>📥 Export Diagnostic Logs</span>
-              </button>
+          <!-- Permission Guard Banner for Non-Admin / Citizen -->
+          <div id="admin-permission-guard-banner" class="access-restricted-card" style="display: none;">
+            <div style="font-size: 3rem; margin-bottom: 0.75rem;">🔒</div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: #991b1b; margin-bottom: 0.5rem;">Institutional Clearance Required</h3>
+            <p style="font-size: 0.875rem; color: #475569; max-width: 500px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+              Google Earth Engine infrastructure, raw radar feeds, and system diagnostics are restricted to <b>System Administrators</b> and <b>District Disaster Managers</b>.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+              <button class="btn btn-primary btn-sm" onclick="LandslideAuth.loginAsRole('ADMIN')">⚡ Switch to System Admin</button>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideAuth.loginAsRole('DISASTER_MANAGER')">🎖️ Switch to Disaster Manager</button>
+              <button class="btn btn-secondary btn-sm" onclick="LandslideApp.navigateTo('dashboard')">← Return to Dashboard</button>
             </div>
           </div>
+
+          <div id="admin-interactive-controls-container">
+            <div class="page-title-banner">
+              <div>
+                <h2>⚙️ System Diagnostics & GEE Pipeline Operations</h2>
+                <p>Real-time operational monitoring for Google Earth Engine, IMD Doppler radars, ground IoT telemetry, and AI inference latency.</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn-secondary btn-sm" onclick="LandslideApp.refreshLiveData()">
+                  <span>🔄 Ping All Feeds</span>
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="LandslideApp.showToast('Triggered force sync with Copernicus Sentinel-1 InSAR catalog.', 'success')">
+                  <span>🛰️ Force InSAR Sync</span>
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="ExportUtils.downloadCSV()">
+                  <span>📥 Export Diagnostic Logs</span>
+                </button>
+              </div>
+            </div>
 
           <!-- Top Status KPIs -->
           <div class="grid-cols-4" style="margin-bottom: 1.5rem;">
@@ -1562,7 +1594,8 @@
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
         <!-- ================================================================== -->
         <!-- VIEW 12: LANDSLIDE AI ASSISTANT -->
@@ -1954,6 +1987,98 @@
     </div>
   </div>
 
+  <!-- ====================================================================== -->
+  <!-- MODAL: INSTITUTIONAL ROLE AUTHENTICATION & LOGIN (4 PROFILES) -->
+  <!-- ====================================================================== -->
+  <div class="modal-overlay" id="auth-login-modal">
+    <div class="modal-content" style="max-width: 780px;">
+      <div class="modal-header" style="background: #ffffff; border-bottom: 1px solid var(--border-light);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 12px; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+            🔐
+          </div>
+          <div>
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">Institutional Access & Role Authentication</h3>
+            <p style="font-size: 0.775rem; color: #64748b; margin: 2px 0 0 0;">Select from 4 official system roles or sign in with credentials</p>
+          </div>
+        </div>
+        <button onclick="LandslideAuth.closeLoginModal()" style="background:none; border:none; font-size:1.3rem; cursor:pointer; color:#64748b;" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.25rem 1.5rem;">
+        <!-- Tabs: Quick Switch vs Credential Form -->
+        <div class="auth-login-tabs">
+          <button type="button" class="auth-tab-btn active" id="auth-tab-quick" onclick="LandslideAuth.switchTab('quick')">
+            ⚡ 1-Click Role Logins (4 Official Profiles)
+          </button>
+          <button type="button" class="auth-tab-btn" id="auth-tab-form" onclick="LandslideAuth.switchTab('form')">
+            🔑 Credential Sign-In (Email & Password)
+          </button>
+        </div>
+
+        <!-- Section 1: 4 Role Cards Grid -->
+        <div id="auth-section-quick">
+          <p style="font-size: 0.8rem; color: #475569; margin: 0 0 1rem 0;">
+            Click <b>Quick Login</b> on any profile below to immediately assume that role with its authorized clearance, permissions, and institutional credentials.
+          </p>
+          <div id="auth-role-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;">
+            <!-- Rendered dynamically by LandslideAuth.renderRoleCards() -->
+          </div>
+        </div>
+
+        <!-- Section 2: Form Login -->
+        <div id="auth-section-form" style="display: none;">
+          <div id="auth-login-error-msg" style="display: none; background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.825rem; font-weight: 600; margin-bottom: 1rem;"></div>
+
+          <form onsubmit="LandslideAuth.handleFormSubmit(event)">
+            <div class="login-form-group">
+              <label for="auth-login-email">Official Institutional Email</label>
+              <input type="email" id="auth-login-email" class="login-input" placeholder="e.g., commander.nair@ddma.gov.in" required>
+            </div>
+
+            <div class="login-form-group">
+              <label for="auth-login-password">System Password</label>
+              <input type="password" id="auth-login-password" class="login-input" placeholder="••••••••" required>
+            </div>
+
+            <div class="login-form-group">
+              <label for="auth-login-role">Assigned System Role</label>
+              <select id="auth-login-role" class="login-input" style="font-weight: 600;">
+                <option value="DISASTER_MANAGER">🎖️ Disaster Manager (DDMA Operations Commander)</option>
+                <option value="ADMIN">⚙️ System Administrator (Geoinformatics Lead)</option>
+                <option value="ANALYST">🔬 Field Analyst (Geological Survey of India)</option>
+                <option value="CITIZEN">👤 Citizen / Public Resident (Community Watch)</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+              <span style="font-size: 0.75rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 6px;">Quick Autofill Credentials:</span>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="quick-demo-btn" onclick="LandslideAuth.fillLoginForm('DISASTER_MANAGER')">🎖️ Fill Disaster Mgr</button>
+                <button type="button" class="quick-demo-btn" onclick="LandslideAuth.fillLoginForm('ADMIN')">⚙️ Fill Admin</button>
+                <button type="button" class="quick-demo-btn" onclick="LandslideAuth.fillLoginForm('ANALYST')">🔬 Fill Analyst</button>
+                <button type="button" class="quick-demo-btn" onclick="LandslideAuth.fillLoginForm('CITIZEN')">👤 Fill Citizen</button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; font-weight: 700; padding: 0.75rem;">
+              ✓ Authenticate & Sign In
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 var(--radius-xl) var(--radius-xl);">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="LandslideAuth.logout()" style="color: #64748b;">
+          🚪 Sign Out (Public Mode)
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="LandslideAuth.closeLoginModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -1963,6 +2088,7 @@
 
   <!-- Application Logic -->
   <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/ai-engine.js"></script>
   <script src="js/map.js"></script>
   <script src="js/charts.js"></script>

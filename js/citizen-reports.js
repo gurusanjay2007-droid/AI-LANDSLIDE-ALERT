@@ -247,7 +247,9 @@ const CitizenReporting = {
                           rep.status === "Pending" ? "background: #fffbeb; color: #92400e; border: 1px solid #fde68a;" :
                           "background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;";
 
-      const isAdmin = LandslideApp.currentRole === "ADMIN" || LandslideApp.currentRole === "DISASTER_MANAGER";
+      const isAdmin = typeof LandslideAuth !== "undefined"
+        ? LandslideAuth.hasPermission("VERIFY_CITIZEN_REPORTS")
+        : (LandslideApp.currentRole === "ADMIN" || LandslideApp.currentRole === "DISASTER_MANAGER");
 
       return `
         <tr>
@@ -276,11 +278,17 @@ const CitizenReporting = {
   },
 
   updateStatus(reportId, newStatus) {
+    if (typeof LandslideAuth !== "undefined" && !LandslideAuth.hasPermission("VERIFY_CITIZEN_REPORTS")) {
+      LandslideApp.showToast("⛔ Permission Denied: Report verification requires Disaster Manager or Administrator clearance.", "error");
+      return;
+    }
+
     const rep = LANDSLIDE_APP_DATA.citizenReports.find(r => r.id === reportId);
     if (rep) {
       rep.status = newStatus;
       this.renderReportsTable();
-      LandslideApp.showToast(`Report ${reportId} marked as ${newStatus}`, "info");
+      const verifier = typeof LandslideAuth !== "undefined" ? LandslideAuth.getCurrentUser().fullName : "Administrator";
+      LandslideApp.showToast(`Report ${reportId} marked as ${newStatus} (${verifier})`, "success");
     }
   }
 };

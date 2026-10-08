@@ -118,6 +118,14 @@ const EarlyWarningSystem = {
       return;
     }
 
+    const canManageAlerts = typeof LandslideAuth !== "undefined"
+      ? LandslideAuth.hasPermission("RESOLVE_ALERTS")
+      : (LandslideApp.currentRole === "ADMIN" || LandslideApp.currentRole === "DISASTER_MANAGER");
+
+    const canBroadcast = typeof LandslideAuth !== "undefined"
+      ? LandslideAuth.hasPermission("BROADCAST_ALERTS")
+      : (LandslideApp.currentRole === "ADMIN" || LandslideApp.currentRole === "DISASTER_MANAGER");
+
     container.innerHTML = alerts.map(alt => {
       const isResolved = alt.status === "RESOLVED";
       const isCritical = alt.alert_level === "CRITICAL" || alt.status === "CRITICAL";
@@ -159,9 +167,13 @@ const EarlyWarningSystem = {
               <button class="btn btn-secondary btn-sm" onclick="LandslideApp.selectLocation('${alt.location_id}'); LandslideApp.navigateTo('analysis');">
                 Inspect Location Factors →
               </button>
-              <button class="btn btn-secondary btn-sm" onclick="EarlyWarningSystem.reopenAlert('${alt.id}')" style="color: #b45309; border-color: #fde68a;">
-                ↺ Reopen Alert
-              </button>
+              ${canManageAlerts ? `
+                <button class="btn btn-secondary btn-sm" onclick="EarlyWarningSystem.reopenAlert('${alt.id}')" style="color: #b45309; border-color: #fde68a;">
+                  ↺ Reopen Alert
+                </button>
+              ` : `
+                <span style="font-size: 0.725rem; color: #94a3b8; align-self: center;">🔒 Reopen restricted to Command</span>
+              `}
             </div>
           </div>
         `;
@@ -201,12 +213,20 @@ const EarlyWarningSystem = {
             <button class="btn btn-secondary btn-sm" onclick="LandslideApp.selectLocation('${alt.location_id}'); LandslideApp.navigateTo('analysis');">
               Inspect Location Factors →
             </button>
-            <button class="btn btn-secondary btn-sm" onclick="EarlyWarningSystem.resolveAlert('${alt.id}')" style="color: #059669; border-color: #a7f3d0;">
-              ✓ Mark Resolved
-            </button>
-            <button class="btn btn-primary btn-sm" onclick="EarlyWarningSystem.openBroadcastModal('${alt.id}')">
-              📡 Broadcast Alert (SMS / Siren)
-            </button>
+            ${canManageAlerts ? `
+              <button class="btn btn-secondary btn-sm" onclick="EarlyWarningSystem.resolveAlert('${alt.id}')" style="color: #059669; border-color: #a7f3d0;">
+                ✓ Mark Resolved
+              </button>
+            ` : ''}
+            ${canBroadcast ? `
+              <button class="btn btn-primary btn-sm" onclick="EarlyWarningSystem.openBroadcastModal('${alt.id}')">
+                📡 Broadcast Alert (SMS / Siren)
+              </button>
+            ` : `
+              <button class="btn btn-secondary btn-sm" style="color: #64748b; background: #f8fafc;" onclick="EarlyWarningSystem.openBroadcastModal('${alt.id}')" title="Disaster Manager or Admin clearance required">
+                🔒 Broadcast (Command Only)
+              </button>
+            `}
           </div>
         </div>
       `;
@@ -214,6 +234,11 @@ const EarlyWarningSystem = {
   },
 
   resolveAlert(alertId) {
+    if (typeof LandslideAuth !== "undefined" && !LandslideAuth.hasPermission("RESOLVE_ALERTS")) {
+      LandslideApp.showToast("⛔ Permission Denied: Resolving official bulletins requires Disaster Manager or Administrator clearance.", "error");
+      return;
+    }
+
     const alert = LANDSLIDE_APP_DATA.alerts.find(a => a.id === alertId);
     if (!alert) return;
 
@@ -224,6 +249,11 @@ const EarlyWarningSystem = {
   },
 
   reopenAlert(alertId) {
+    if (typeof LandslideAuth !== "undefined" && !LandslideAuth.hasPermission("RESOLVE_ALERTS")) {
+      LandslideApp.showToast("⛔ Permission Denied: Reopening alerts requires Disaster Manager or Administrator clearance.", "error");
+      return;
+    }
+
     const alert = LANDSLIDE_APP_DATA.alerts.find(a => a.id === alertId);
     if (!alert) return;
 
@@ -234,6 +264,12 @@ const EarlyWarningSystem = {
   },
 
   openBroadcastModal(alertId) {
+    if (typeof LandslideAuth !== "undefined" && !LandslideAuth.hasPermission("BROADCAST_ALERTS")) {
+      const u = LandslideAuth.getCurrentUser();
+      LandslideApp.showToast(`⛔ Access Denied: Live Siren & SMS broadcasts are restricted to Disaster Managers or Administrators. Currently logged in as: ${u.roleLabel}`, "error");
+      return;
+    }
+
     const alert = LANDSLIDE_APP_DATA.alerts.find(a => a.id === alertId) || LANDSLIDE_APP_DATA.alerts[0];
     const modal = document.getElementById("broadcast-alert-modal");
     if (!modal) return;
@@ -251,6 +287,11 @@ const EarlyWarningSystem = {
   },
 
   executeBroadcast() {
+    if (typeof LandslideAuth !== "undefined" && !LandslideAuth.hasPermission("BROADCAST_ALERTS")) {
+      LandslideApp.showToast("⛔ Unauthorized to execute emergency siren broadcast.", "error");
+      return;
+    }
+
     this.playAlertChime("CRITICAL");
     this.closeBroadcastModal();
     LandslideApp.showToast("CAP Broadcast Dispatched via SMS Gateway & Local Siren System!", "success");

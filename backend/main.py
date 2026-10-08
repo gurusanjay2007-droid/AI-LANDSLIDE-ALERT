@@ -380,11 +380,131 @@ class ChatRequest(BaseModel):
     conversationId: Optional[str] = None
     language: Optional[str] = "en"
 
+# ------------------------------------------------------------------------------
+# User Authentication & RBAC Store (4 System Profiles)
+# ------------------------------------------------------------------------------
+MOCK_SYSTEM_USERS = {
+    "DISASTER_MANAGER": {
+        "id": "USR-001",
+        "role": "DISASTER_MANAGER",
+        "role_label": "Disaster Manager",
+        "full_name": "Col. Rajesh Nair",
+        "title": "Operations Commander, District Disaster Management Authority (DDMA)",
+        "district": "Nilgiris & Western Ghats Zone",
+        "email": "commander.nair@ddma.gov.in",
+        "phone": "+91 94432 10100",
+        "password": "manager123",
+        "permissions": ["BROADCAST_ALERTS", "RESOLVE_ALERTS", "VERIFY_CITIZEN_REPORTS", "ISSUE_BULLETINS", "EVACUATION_COORDINATION", "VIEW_ALL_TELEMETRY"]
+    },
+    "ADMIN": {
+        "id": "USR-002",
+        "role": "ADMIN",
+        "role_label": "System Administrator",
+        "full_name": "Dr. K. S. Sharma",
+        "title": "Lead Geoinformatics & GEE Infrastructure Administrator",
+        "district": "National Geospatial Operations Hub",
+        "email": "admin.sharma@landslide-alert.gov.in",
+        "phone": "+91 98840 99881",
+        "password": "admin123",
+        "permissions": ["FULL_ADMIN_ACCESS", "MANAGE_GEE_PIPELINE", "SYSTEM_HEALTH_RESTART", "USER_MANAGEMENT", "BROADCAST_ALERTS", "RESOLVE_ALERTS", "VERIFY_CITIZEN_REPORTS", "VIEW_ALL_TELEMETRY"]
+    },
+    "ANALYST": {
+        "id": "USR-003",
+        "role": "ANALYST",
+        "role_label": "Field Analyst",
+        "full_name": "Pooja Venkat, M.Sc.",
+        "title": "Senior Geotechnical Risk Analyst, Geological Survey of India",
+        "district": "Nilgiris & Wayanad Field Sectors",
+        "email": "pooja.analyst@gsi.gov.in",
+        "phone": "+91 97500 44211",
+        "password": "analyst123",
+        "permissions": ["VIEW_ALL_TELEMETRY", "RUN_AI_SIMULATOR", "INSPECT_GEOTECHNICAL_DATA", "DOWNLOAD_CSV_BULLETINS", "LOG_TECHNICAL_ASSESSMENT"]
+    },
+    "CITIZEN": {
+        "id": "USR-004",
+        "role": "CITIZEN",
+        "role_label": "Citizen / Resident",
+        "full_name": "Ananya Ramesh",
+        "title": "Nilgiris Community Resident & Hill Watch Volunteer",
+        "district": "Coonoor Valley, Nilgiris",
+        "email": "ananya.citizen@gmail.com",
+        "phone": "+91 98421 77334",
+        "password": "citizen123",
+        "permissions": ["SUBMIT_CITIZEN_REPORT", "VIEW_PUBLIC_MAP", "VIEW_EARLY_WARNINGS", "USE_AI_CHATBOT", "CALL_EMERGENCY_HELPLINES"]
+    }
+}
 
+class LoginRequest(BaseModel):
+    email: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
 
 # ------------------------------------------------------------------------------
 # API Endpoints
 # ------------------------------------------------------------------------------
+
+@app.get("/api/auth/users")
+def get_auth_users():
+    """Returns available institutional login accounts and profiles."""
+    users_public = []
+    for k, u in MOCK_SYSTEM_USERS.items():
+        users_public.append({
+            "role": u["role"],
+            "role_label": u["role_label"],
+            "full_name": u["full_name"],
+            "title": u["title"],
+            "district": u["district"],
+            "email": u["email"],
+            "permissions": u["permissions"],
+            "demo_password": u["password"]
+        })
+    return {"status": "SUCCESS", "users": users_public}
+
+@app.post("/api/auth/login")
+def login_user(req: LoginRequest):
+    """Authenticates against the 4 institutional system roles."""
+    target_user = None
+    if req.role and req.role in MOCK_SYSTEM_USERS:
+        target_user = MOCK_SYSTEM_USERS[req.role]
+    elif req.email:
+        target_user = next(
+            (u for u in MOCK_SYSTEM_USERS.values() if u["email"].lower() == req.email.strip().lower()),
+            None
+        )
+
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Account not found. Select from DISASTER_MANAGER, ADMIN, ANALYST, or CITIZEN."
+        )
+
+    if req.password and req.password not in [target_user["password"], "demo", "123456"]:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid password for {target_user['email']}. Demo password is: {target_user['password']}"
+        )
+
+    return {
+        "status": "AUTHENTICATED",
+        "token": f"bearer-demo-token-{target_user['role'].lower()}",
+        "user": {
+            "id": target_user["id"],
+            "role": target_user["role"],
+            "role_label": target_user["role_label"],
+            "full_name": target_user["full_name"],
+            "title": target_user["title"],
+            "district": target_user["district"],
+            "email": target_user["email"],
+            "phone": target_user["phone"],
+            "permissions": target_user["permissions"]
+        }
+    }
+
+@app.get("/api/auth/me")
+def get_current_user_profile(role: Optional[str] = "DISASTER_MANAGER"):
+    """Fetches active user profile by role key."""
+    user = MOCK_SYSTEM_USERS.get(role, MOCK_SYSTEM_USERS["DISASTER_MANAGER"])
+    return {"status": "SUCCESS", "user": user}
 
 @app.get("/")
 def read_root():

@@ -579,3 +579,172 @@
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* ==============================================================================
+   Authentication & Role-Based Access Control (RBAC) Styles
+   ============================================================================== */
+.user-auth-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  border: 1px solid var(--border-medium);
+  padding: 0.3rem 0.65rem 0.3rem 0.45rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  user-select: none;
+}
+
+.user-auth-pill:hover {
+  border-color: var(--primary);
+  background-color: #f8fafc;
+  box-shadow: 0 2px 6px rgba(30, 64, 175, 0.12);
+  transform: translateY(-1px);
+}
+
+.user-avatar-badge {
+  font-size: 1.15rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-info-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.user-name-label {
+  font-size: 0.775rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.user-role-tag {
+  font-size: 0.625rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  display: inline-block;
+  border: 1px solid transparent;
+}
+
+.switch-account-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: 2px;
+}
+
+.switch-account-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+/* Login Modal Tabs & Layout */
+.auth-login-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #f1f5f9;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.auth-tab-btn {
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-tab-btn.active {
+  color: var(--primary);
+  background-color: #eff6ff;
+}
+
+.auth-tab-btn:hover:not(.active) {
+  color: #0f172a;
+  background-color: #f8fafc;
+}
+
+.auth-role-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md) !important;
+}
+
+.login-form-group {
+  margin-bottom: 1rem;
+}
+
+.login-form-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 0.35rem;
+}
+
+.login-input {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15);
+}
+
+.quick-demo-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.725rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: #334155;
+  transition: all 0.15s ease;
+}
+
+.quick-demo-btn:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
+.access-restricted-card {
+  background: #fff;
+  border: 2px dashed #fca5a5;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  max-width: 600px;
+  margin: 2rem auto;
+  box-shadow: var(--shadow-sm);
+}
