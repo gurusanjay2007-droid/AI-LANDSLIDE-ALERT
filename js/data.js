@@ -879,5 +879,115 @@ const LANDSLIDE_APP_DATA = {
       tech: "Common Alerting Protocol (CAP), NDMA / SDMA Gateway",
       icon: "alert-triangle"
     }
+  ],
+
+  // Early Warning Civil Defense Siren Network (Telemetry & Hardware Simulation)
+  sirenTowers: [
+    {
+      id: "TWR-01",
+      name: "Nilgiris Peak Acoustic Array",
+      sector: "Nilgiris North",
+      lat: 11.3912,
+      lng: 76.7112,
+      status: "ONLINE",
+      coverage_radius_km: 15,
+      sound_output_db: 130,
+      power_backup_pct: 98,
+      last_ping: "Just now",
+      hardware_status: "STANDBY_READY",
+      hardware_mode: "SIMULATION"
+    },
+    {
+      id: "TWR-02",
+      name: "Coonoor Ghat Relay Mast",
+      sector: "Coonoor Valley (NH-67)",
+      lat: 11.3530,
+      lng: 76.7959,
+      status: "ONLINE",
+      coverage_radius_km: 12,
+      sound_output_db: 128,
+      power_backup_pct: 94,
+      last_ping: "1 min ago",
+      hardware_status: "STANDBY_READY",
+      hardware_mode: "SIMULATION"
+    },
+    {
+      id: "TWR-03",
+      name: "Meppadi Valley Warning Mast",
+      sector: "Wayanad Slope Sector",
+      lat: 11.5512,
+      lng: 76.1264,
+      status: "ONLINE",
+      coverage_radius_km: 14,
+      sound_output_db: 132,
+      power_backup_pct: 91,
+      last_ping: "2 mins ago",
+      hardware_status: "STANDBY_READY",
+      hardware_mode: "SIMULATION"
+    },
+    {
+      id: "TWR-04",
+      name: "Munnar Tea Ridge Acoustic Tower",
+      sector: "Idukki High Range",
+      lat: 10.0889,
+      lng: 77.0595,
+      status: "ONLINE",
+      coverage_radius_km: 10,
+      sound_output_db: 125,
+      power_backup_pct: 88,
+      last_ping: "Just now",
+      hardware_status: "STANDBY_READY",
+      hardware_mode: "SIMULATION"
+    },
+    {
+      id: "TWR-05",
+      name: "Joshimath Substation Mast",
+      sector: "Garhwal Himalayas",
+      lat: 30.5564,
+      lng: 79.5661,
+      status: "OFFLINE",
+      coverage_radius_km: 15,
+      sound_output_db: 135,
+      power_backup_pct: 0,
+      last_ping: "Unreachable (Fiber Cut / Power Outage)",
+      hardware_status: "OFFLINE_UNAVAILABLE",
+      hardware_mode: "SIMULATION"
+    }
+  ],
+
+  // Civil Defense Siren Activation & Audit Trail Logs
+  sirenLogs: [
+    {
+      id: "SIR-LOG-2026-081",
+      timestamp: "2026-10-08 14:30:15",
+      location_id: "LOC-02",
+      location_name: "Coonoor Ghat Corridor (NH-67)",
+      tower_id: "TWR-02",
+      tower_name: "Coonoor Ghat Relay Mast",
+      distance_km: 1.8,
+      radius_km: 12,
+      risk_level: "CRITICAL",
+      siren_state: "EMERGENCY_WARBLE",
+      tone_desc: "Emergency Siren (Continuous Warble 440-880 Hz)",
+      status: "DISPATCHED_SIMULATED",
+      operator: "disaster.ops@landslide-alert.gov.in (Official Operations)",
+      mode: "SIMULATION"
+    },
+    {
+      id: "SIR-LOG-2026-079",
+      timestamp: "2026-10-08 11:15:42",
+      location_id: "LOC-01",
+      location_name: "Emerald Valley & Doddabetta Slopes",
+      tower_id: "TWR-01",
+      tower_name: "Nilgiris Peak Acoustic Array",
+      distance_km: 2.4,
+      radius_km: 10,
+      risk_level: "HIGH",
+      siren_state: "WARNING_PULSED",
+      tone_desc: "Warning Siren (Intermittent Pulse 587 Hz)",
+      status: "DISPATCHED_SIMULATED",
+      operator: "admin.sdma@landslide-alert.gov.in (Official Operations)",
+      mode: "SIMULATION"
+    }
   ]
 };

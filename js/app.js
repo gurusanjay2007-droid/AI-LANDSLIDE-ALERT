@@ -122,6 +122,8 @@ const LandslideApp = {
       CitizenReporting.renderReportsTable();
     } else if (viewName === "alerts") {
       EarlyWarningSystem.renderAlertFeed();
+      EarlyWarningSystem.renderSirenTowersGrid();
+      EarlyWarningSystem.renderSirenAuditTrail();
     } else if (viewName === "history") {
       this.renderHistoricalPage();
     } else if (viewName === "workflow") {
@@ -159,6 +161,8 @@ const LandslideApp = {
     } else if (this.currentView === "environment") {
       this.renderEnvironmentalStatus(loc, this.currentEnvTimeframe || "24h");
       LandslideCharts.initEnvironmentalCharts(this.currentEnvTimeframe || "24h", loc);
+    } else if (this.currentView === "alerts") {
+      EarlyWarningSystem.renderSirenTowersGrid();
     }
   },
 
@@ -607,6 +611,9 @@ const LandslideApp = {
     [rainSlider, soilSlider, slopeSlider].forEach(slider => {
       if (slider) slider.addEventListener("input", updateSim);
     });
+
+    // Populate initial simulator values from default slider settings
+    updateSim();
   },
 
   bindLocationSelector() {

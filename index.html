@@ -599,7 +599,7 @@
             </div>
           </div>
 
-          <div class="grid-cols-4" style="margin-bottom: 1.25rem;">
+          <div class="grid-cols-5" style="margin-bottom: 1.25rem;">
             <div class="kpi-card kpi-info">
               <div class="kpi-label">LOCATION</div>
               <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-top: 2px;" id="env-loc-name">Coonoor Corridor</div>
@@ -615,6 +615,10 @@
             <div class="kpi-card kpi-high">
               <div class="kpi-label">PORE PRESSURE</div>
               <div class="kpi-number" style="font-size: 1.4rem; color: #d97706;" id="env-pore-val">58.6 kPa</div>
+            </div>
+            <div class="kpi-card kpi-high">
+              <div class="kpi-label">GROUND VIBRATION</div>
+              <div class="kpi-number" style="font-size: 1.4rem; color: #dc2626;" id="env-vibe-val">3.4 mm/s</div>
             </div>
           </div>
 
@@ -1349,6 +1353,20 @@
         <!-- VIEW 8: ALERTS & WARNINGS -->
         <!-- ================================================================== -->
         <section id="view-alerts" class="view-section" style="display: none;">
+          <!-- Active Siren Audio Notification Banner -->
+          <div class="siren-active-banner" id="active-siren-banner" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.8rem; animation: pulseDot 1s infinite;">📢</span>
+              <div>
+                <div style="font-weight: 800; font-size: 1.05rem;" id="active-siren-banner-title">🚨 ACTIVE CIVIL DEFENSE SIREN SOUNDING</div>
+                <div style="font-size: 0.8rem; opacity: 0.9;" id="active-siren-banner-desc">Acoustic siren actively sounding. Hardware mode: SIMULATION.</div>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="EarlyWarningSystem.stopActiveSiren()" style="background: #ffffff; color: #991b1b; font-weight: 700; border: none; box-shadow: var(--shadow-sm);">
+              ⏹️ Silence / Stop Siren
+            </button>
+          </div>
+
           <div class="page-title-banner">
             <div>
               <h2>Early Warning Alerts & Action Protocols</h2>
@@ -1361,6 +1379,19 @@
             </div>
           </div>
 
+          <!-- Civil Defense Siren Tower Network Telemetry -->
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 class="card-title">🔊 Civil Defense Acoustic Siren Network Telemetry</h3>
+                <p style="font-size: 0.775rem; color: #64748b; margin: 0;">Operational health, decibel sound pressure, and real-time repeater ping status.</p>
+              </div>
+              <span class="sim-tag warning">⚠️ HARDWARE SIMULATION MODE</span>
+            </div>
+            <div class="siren-tower-grid" id="siren-towers-container" style="margin-top: 1rem; margin-bottom: 0;"></div>
+          </div>
+
+          <!-- Early Warning Alerts Tabs & Feed -->
           <div class="tabs-nav" id="alerts-tabs-nav">
             <button class="tab-btn active" data-filter="ALL" onclick="EarlyWarningSystem.renderAlertFeed('ALL')">
               All Alerts <span class="tab-count" id="count-alerts-all"></span>
@@ -1376,7 +1407,35 @@
             </button>
           </div>
 
-          <div id="alerts-feed-container" style="padding-bottom: 2rem;"></div>
+          <div id="alerts-feed-container" style="padding-bottom: 1.5rem;"></div>
+
+          <!-- Civil Defense Siren Dispatch Audit Trail Table -->
+          <div class="card" style="margin-top: 1rem; margin-bottom: 2rem;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 class="card-title">📜 Civil Defense Siren Activation & Audit Trail</h3>
+                <p style="font-size: 0.775rem; color: #64748b; margin: 0;">Historical record of siren klaxons, warning radii, tower distances, and operator authorizations.</p>
+              </div>
+              <span class="sim-tag">SECURE LOG</span>
+            </div>
+            <div style="overflow-x: auto; margin-top: 0.75rem;">
+              <table class="siren-audit-table">
+                <thead>
+                  <tr>
+                    <th>Log ID</th>
+                    <th>Timestamp</th>
+                    <th>Target Sector</th>
+                    <th>Transmitting Mast</th>
+                    <th>Risk Bracket</th>
+                    <th>Acoustic Tone & Radius</th>
+                    <th>Mode</th>
+                    <th>Authorized Operator</th>
+                  </tr>
+                </thead>
+                <tbody id="siren-audit-table-body"></tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
         <!-- ================================================================== -->
@@ -1852,27 +1911,89 @@
   <!-- MODAL: BROADCAST ALERT SIMULATOR -->
   <!-- ====================================================================== -->
   <div class="modal-overlay" id="broadcast-alert-modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 620px;">
       <div class="modal-header">
-        <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a;">📡 Broadcast Emergency CAP Alert</h3>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0;">📡 Civil Defense Siren & CAP Alert Console</h3>
+          <span class="sim-tag warning">SIMULATION</span>
+        </div>
         <button onclick="EarlyWarningSystem.closeBroadcastModal()" style="background:none; border:none; font-size:1.2rem; cursor:pointer;" aria-label="Close modal">✕</button>
       </div>
-      <div class="modal-body">
-        <p style="font-size: 0.825rem; color: #475569; margin-bottom: 0.75rem;">
-          You are about to transmit an emergency warning to local citizens and disaster response teams via SMS Gateway and Public Sirens.
-        </p>
-        <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 0.85rem; border-radius: 8px; margin-bottom: 0.75rem;">
-          <div style="font-weight: 700; color: #991b1b; font-size: 0.875rem;" id="modal-broadcast-headline">Critical Landslide Warning</div>
-          <div style="font-size: 0.775rem; color: #7f1d1d; margin-top: 3px;" id="modal-broadcast-target">Target: All registered SIMs in sector</div>
-          <div style="font-size: 0.775rem; color: #334155; margin-top: 6px;" id="modal-broadcast-action">Action required</div>
+      <div class="modal-body" style="padding: 1.25rem 1.5rem;">
+        <!-- Simulation Notice -->
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 0.65rem 0.85rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.775rem; color: #1e40af; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.1rem;">⚠️</span>
+          <div>
+            <b>SIMULATION MODE ACTIVE:</b> Physical sirens are disconnected. Dispatches simulate NDMA CAP-IN telemetry packets and generate local browser audio synthesis.
+          </div>
         </div>
-        <div style="font-size: 0.75rem; color: #64748b;">
-          Protocol: <b>NDMA Common Alerting Protocol (CAP-IN v1.2)</b>
+
+        <!-- Target Location -->
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.775rem; font-weight: 700; color: #334155; margin-bottom: 4px;">Target Monitored Sector *</label>
+          <select id="modal-broadcast-loc-select" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-medium); font-size: 0.85rem; background: #fff;"></select>
+        </div>
+
+        <!-- Risk Category & Siren Acoustic State -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-light); padding: 0.85rem; border-radius: 8px; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Evaluated Siren Acoustic State:</span>
+            <span id="modal-broadcast-siren-state" class="risk-badge CRITICAL">Emergency Siren (Continuous Warble)</span>
+          </div>
+          <div style="font-size: 0.825rem; font-weight: 700; color: #0f172a;" id="modal-broadcast-siren-tone">Continuous 440-880 Hz Klaxon</div>
+          <p style="font-size: 0.75rem; color: #475569; margin: 4px 0 8px 0;" id="modal-broadcast-siren-desc">Immediate evacuation ordered. High-intensity multi-tone klaxon.</p>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="EarlyWarningSystem.previewSirenTone()" style="font-size: 0.75rem; padding: 3px 10px;">
+            🔊 Preview Acoustic Tone (2s)
+          </button>
+        </div>
+
+        <!-- Transmitting Siren Tower Selection -->
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.775rem; font-weight: 700; color: #334155; margin-bottom: 4px;">Transmitting Acoustic Mast / Tower *</label>
+          <select id="modal-broadcast-tower-select" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-medium); font-size: 0.85rem; background: #fff;"></select>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 0.75rem; color: #475569;">
+            <span>Mast Status: <span id="modal-broadcast-tower-status" class="risk-badge LOW" style="font-size: 0.7rem; padding: 2px 6px;">ONLINE</span></span>
+            <span>Haversine Distance: <b id="modal-broadcast-distance" style="color: #1e40af;">1.8 km</b></span>
+          </div>
+        </div>
+
+        <!-- Warning Radius Slider -->
+        <div style="margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label style="font-size: 0.775rem; font-weight: 700; color: #334155;">Emergency Warning Radius:</label>
+            <span id="modal-broadcast-radius-val" style="font-weight: 800; color: #1e40af; font-size: 0.85rem;">12 km</span>
+          </div>
+          <input type="range" id="modal-broadcast-radius-slider" min="2" max="30" value="12" step="1" style="width: 100%;">
+          <div style="font-size: 0.725rem; color: #64748b; margin-top: 4px;" id="modal-broadcast-pop-estimate">~18,500 residents in alert zone</div>
+        </div>
+
+        <!-- Offline Tower Warning Box -->
+        <div id="modal-broadcast-offline-warning" style="display: none; background: #fef2f2; border: 1px solid #fecaca; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.775rem; color: #991b1b;">
+          <b>❌ Selected Siren Mast is OFFLINE:</b> Hardware relay is unreachable due to maintenance or fiber severed. Transmissions through this tower are blocked. Please select an active online tower.
+        </div>
+
+        <!-- Duplicate Alert Warning Box -->
+        <div id="modal-broadcast-duplicate-warning" style="display: none; background: #fffbeb; border: 1px solid #fde68a; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.775rem; color: #92400e;">
+          <b>⚠️ Duplicate Alert Warning:</b> This sector was already alerted within the past 15 minutes (<span id="modal-broadcast-duplicate-time">Recently</span>).
+          <div style="margin-top: 6px;">
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 700; color: #78350f;">
+              <input type="checkbox" id="modal-broadcast-override-dup">
+              Override Duplicate Protection (Emergency Command Authorization)
+            </label>
+          </div>
+        </div>
+
+        <div style="font-size: 0.725rem; color: #64748b; border-top: 1px solid var(--border-light); padding-top: 0.6rem;">
+          Protocol: <b>NDMA Common Alerting Protocol (CAP-IN v1.2)</b> | Hardware Status: <b>Simulation Standby</b>
         </div>
       </div>
+
       <div class="modal-footer">
         <button class="btn btn-secondary btn-sm" onclick="EarlyWarningSystem.closeBroadcastModal()">Cancel</button>
-        <button class="btn btn-danger btn-sm" onclick="EarlyWarningSystem.executeBroadcast()">Confirm & Transmit</button>
+        <button class="btn btn-danger btn-sm" id="modal-broadcast-submit-btn" onclick="EarlyWarningSystem.executeBroadcast()">
+          Confirm & Dispatch Siren [Simulation]
+        </button>
       </div>
     </div>
   </div>

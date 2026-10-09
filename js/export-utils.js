@@ -56,6 +56,7 @@ const ExportUtils = {
           .footer { margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 11px; color: #64748b; }
         </style>
       </head>
+      <body>
         <div class="header">
           <div style="display: flex; align-items: center; gap: 14px;">
             <img src="logo.png" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" alt="Logo" />

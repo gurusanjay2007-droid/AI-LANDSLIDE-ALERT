@@ -583,7 +583,7 @@ body {
   }
 
   /* Grid Conversions for Mobile */
-  .grid-cols-4 {
+  .grid-cols-5, .grid-cols-4 {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 0.65rem !important;
   }
@@ -648,7 +648,7 @@ body {
 }
 
 @media (max-width: 480px) {
-  .grid-cols-4 {
+  .grid-cols-5, .grid-cols-4 {
     grid-template-columns: 1fr !important;
   }
   
